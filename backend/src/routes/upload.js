@@ -32,6 +32,11 @@ router.post(
     cvUploader.single('file'),
     asyncHandler(async (req, res) => {
         if (!req.file) throw badRequest('No se recibió archivo');
+
+        // Reescribir metadatos del PDF (autor, título) para que el browser
+        // muestre "Alejo Monardez" en vez del nombre embebido en el template
+        await uploadService.patchCvMeta(req.file);
+
         const url = uploadService.buildCvUrl(req.file);
 
         // Persistir en settings (clave 'cv_url') y limpiar archivos viejos

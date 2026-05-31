@@ -1,77 +1,94 @@
 # Portfolio — Alejo Monárdez
 
-Portafolio personal full-stack. JavaScript de punta a punta.
+Portafolio personal full-stack. JavaScript de punta a punta, deploy con Docker.
 
 ## Stack
 
-- **Frontend:** React 18 + Vite + Tailwind CSS + Framer Motion + GSAP
+- **Frontend:** React 18 + Vite + Tailwind + Framer Motion + GSAP
 - **Backend:** Node.js + Express + MySQL 8 ([backend/](backend/))
 - **AI Service:** Node.js + Groq (Llama 3.3) ([ai-service/](ai-service/))
-- **DB:** MySQL (esquema en [setup.sql](setup.sql))
+- **Deploy:** Docker Compose (4 containers) + Nginx + Certbot
 
 ## Estructura
 
 ```
 portafolio web moñi/
 ├── src/              Frontend React
-├── public/           Estáticos públicos (incluye notification-sw.js)
+├── public/           Estáticos públicos
 ├── backend/          API REST Node (auth, proyectos, mensajes, settings, upload)
-├── ai-service/       Microservicio de IA para el admin (Groq)
-├── uploads/          Imágenes subidas por el admin (gitignored)
-├── docs/             Documentación de deploy
-├── setup.sql         Esquema de la DB
-└── index.html        Entry del frontend
+│   └── Dockerfile
+├── ai-service/       Microservicio de IA para el admin
+│   └── Dockerfile
+├── nginx/            Config del Nginx interno del container frontend
+├── uploads/          Imágenes + CV subidos (volumen persistente en prod)
+├── docs/             DEPLOY.md con la guía completa
+├── Dockerfile        Frontend (build Vite + serve Nginx)
+├── docker-compose.yml
+├── deploy.sh         Script de deploy/update en el VPS
+├── db_export.sql     Dump de la DB (se carga al levantar mysql por primera vez)
+└── setup.sql         Template del esquema (alternativa a db_export.sql)
 ```
 
-## Setup local (3 servicios en paralelo)
+## Setup local (sin Docker, para desarrollo)
 
 ```bash
-# 1. Frontend (terminal 1)
+# Frontend, backend y ai-service en paralelo (3 terminales en una):
 npm install
-npm run dev          # → http://localhost:5173
-
-# 2. Backend (terminal 2)
-cd backend
-npm install
-cp .env.example .env  # editar DB pass, JWT_SECRET, SMTP_*
-npm run dev          # → http://localhost:3000
-
-# 3. AI service (terminal 3)
-cd ai-service
-npm install
-cp .env.example .env  # editar GROQ_API_KEY
-npm start            # → http://localhost:3001
+npm run dev          # arranca los 3 servicios con concurrently
 ```
 
-**Base de datos** (una sola vez):
+URLs:
+- Frontend → http://localhost:5173
+- Backend  → http://localhost:3000
+- AI       → http://localhost:3001
+
+**Configurar entornos** (una sola vez):
 ```bash
-mysql -u root -p
-CREATE DATABASE portfolio_moni CHARACTER SET utf8mb4;
-EXIT;
-mysql -u root -p portfolio_moni < setup.sql
+cd backend     && cp .env.example .env && nano .env
+cd ../ai-service && cp .env.example .env && nano .env
 ```
 
-**Crear admin** (después del setup):
+**Crear admin**:
 ```bash
-cd backend
-node scripts/create-admin.js <usuario> <password>
+cd backend && node scripts/create-admin.js <usuario> <password>
 ```
 
-## Deploy en VPS
+**Base de datos local** (XAMPP):
+```bash
+mysql -u root portfolio_moni < setup.sql
+```
 
-Ver [docs/DEPLOY.md](docs/DEPLOY.md) — setup completo con PM2 + Nginx + SSL.
+## Deploy con Docker (VPS Hostinger)
+
+```bash
+# Una sola vez en el VPS:
+git clone <tu-repo> /var/www/portfolio
+cd /var/www/portfolio
+cp .env.docker.example .env
+nano .env   # completar todos los valores
+
+# Levantar todo:
+docker compose up -d --build
+
+# Updates futuros:
+bash deploy.sh
+```
+
+Guía detallada (Nginx, SSL, backups, troubleshooting): **[docs/DEPLOY.md](docs/DEPLOY.md)**
 
 ## Características destacadas
 
-- **Editor de proyectos asistido por IA** — sugiere título, descripción bilingüe (ES+EN), badge, categoría, tecnologías. Groq + Llama 3.3 70B (gratis).
-- **Notificaciones de contacto** — Service Worker + sonido + email automático (Gmail SMTP) cuando alguien escribe desde el formulario.
-- **Anti-bot scrapers** — el email del portfolio jamás aparece en plano en el HTML. Se sirve ofuscado (base64+reversed) y se decodifica solo al click. Honeypot + rate limiting en el formulario de contacto.
-- **i18n nativo** — todos los proyectos tienen versión ES y EN. Toggle en el header.
-- **Auth JWT** — login con bcrypt, tokens firmados, rate limiting en login.
+- **Editor de proyectos asistido por IA** — sugiere título, descripción bilingüe (ES+EN), badge, categoría, tecnologías. Soporta upload de manifest (package.json, requirements.txt, etc.) para inferir el stack.
+- **Notificaciones de contacto** — Service Worker + sonido + email automático (Gmail SMTP) cuando alguien escribe.
+- **Anti-bot scrapers** — email ofuscado server-side, decode on-click. Honeypot + rate limiting en el formulario.
+- **CV upload desde admin** — reemplazás el PDF cuando querés, cache-busting automático.
+- **i18n nativo** — proyectos en ES y EN, toggle en el header. Mensajes de WhatsApp y email pre-llenados por idioma.
+- **Auth JWT** — login con bcrypt, tokens firmados, rate limiting.
 
-## Convenciones de código
+## Convenciones
 
-- Backend organizado en capas: `routes → services → repositories → db`. Cada capa solo conoce la de abajo.
-- Errores tipados (`HttpError`) que el middleware central serializa.
-- `async/await` en todo el stack (sin callbacks).
-- Variables sensibles SOLO en `.env`. Nunca commiteadas.
+- Backend en capas: `routes → services → repositories → db`.
+- Errores tipados (`HttpError`) con middleware central.
+- async/await en todo el stack.
+- Secretos solo en `.env` (gitignored).
+- Docker images multi-stage, usuarios no-root, healthchecks.

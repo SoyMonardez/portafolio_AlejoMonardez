@@ -15,6 +15,22 @@ function normalizeImages(data) {
     return [];
 }
 
+/**
+ * Normaliza credenciales de demo: array de { label, user, password, note? }.
+ * Filtra entradas vacías y trimea cada campo.
+ */
+function normalizeCredentials(creds) {
+    if (!Array.isArray(creds)) return [];
+    return creds
+        .map(c => ({
+            label:    String(c?.label    || '').trim().slice(0, 60),
+            user:     String(c?.user     || '').trim().slice(0, 100),
+            password: String(c?.password || '').trim().slice(0, 100),
+            note:     String(c?.note     || '').trim().slice(0, 200),
+        }))
+        .filter(c => c.user || c.password);   // descarta filas sin nada útil
+}
+
 export const projectService = {
     async list({ featuredOnly = false } = {}) {
         return projectRepo.findAll({ featuredOnly });
@@ -44,7 +60,10 @@ export const projectService = {
             description_en:       data.description_en       ?? '',
             images:               normalizeImages(data),
             demo_url:             data.demo_url             ?? '',
+            status:               data.status               ?? 'production',
+            github_url:           data.github_url           ?? '',
             tech:                 Array.isArray(data.tech) ? data.tech : [],
+            credentials:          normalizeCredentials(data.credentials),
             featured:             !!data.featured,
             sort_order:           Number.isFinite(data.sort_order) ? data.sort_order : 0,
         });
@@ -58,7 +77,7 @@ export const projectService = {
         const editable = [
             'slug', 'title', 'title_en', 'category', 'category_en',
             'badge', 'badge_en', 'description_short', 'description_short_en',
-            'description', 'description_en', 'demo_url'
+            'description', 'description_en', 'demo_url', 'status', 'github_url'
         ];
 
         const fields = {};
@@ -73,6 +92,9 @@ export const projectService = {
         }
         if (Array.isArray(data.tech)) {
             fields.tech = data.tech;
+        }
+        if (data.credentials !== undefined) {
+            fields.credentials = normalizeCredentials(data.credentials);
         }
         if (data.featured !== undefined) {
             fields.featured = data.featured ? 1 : 0;

@@ -32,4 +32,20 @@
     -webkit-text-stroke: 0px;
     color: white;
   }
+
+  /* Oculta la scrollbar pero mantiene el scroll (para skills strip en mobile) */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Cursor en mobile/touch — el custom cursor sólo en pointer:fine (mouse) */
+@media (pointer: coarse), (max-width: 768px) {
+  html, body, * {
+    cursor: auto !important;
+  }
 }

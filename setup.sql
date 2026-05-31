@@ -71,6 +71,7 @@ CREATE TABLE projects (
     images JSON NOT NULL,
     demo_url VARCHAR(255) DEFAULT '',
     tech JSON NOT NULL,
+    credentials JSON NULL,
     featured TINYINT(1) DEFAULT 0,
     sort_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

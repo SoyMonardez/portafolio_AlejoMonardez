@@ -1,0 +1,57 @@
+# Dependencies — se reinstalan en cada container
+node_modules
+**/node_modules
+
+# Build output — se regenera dentro del container
+dist
+build
+
+# Secrets — los inyectamos vía env_file en docker-compose
+.env
+.env.*
+!.env.example
+!.env.docker.example
+backend/.env
+ai-service/.env
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode
+.idea
+.agent
+.claude
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tests / coverage
+coverage
+.nyc_output
+
+# Documentación / configs no necesarios en runtime
+docs
+README.md
+*.md
+!backend/README.md
+!ai-service/README.md
+
+# Backups y exports de DB — se montan aparte solo en el container de DB
+db_export.sql
+*.sql
+!setup.sql
+
+# Deploy package viejo si quedó algo
+deploy_package
+deploy_package.zip
+prepare_deploy.bat

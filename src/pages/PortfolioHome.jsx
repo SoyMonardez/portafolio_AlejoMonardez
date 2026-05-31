@@ -7,7 +7,7 @@ import {
   SiDocker, SiGit, SiGithub, SiWhatsapp, SiGmail
 } from "react-icons/si";
 import { HiMenuAlt4 } from "react-icons/hi";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoDocumentTextOutline } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import HeroTitle from '../components/HeroTitle';
 import NoiseOverlay from '../components/NoiseOverlay';
@@ -26,6 +26,7 @@ import logo from '../assets/logo.png';
 import { useProjects } from '../data/useProjects';
 import { useLang } from '../data/useLang';
 import { resolveSkill } from '../data/skills';
+import { useSeo } from '../hooks/useSeo';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -221,13 +222,24 @@ export default function PortfolioHome() {
             <a href="#contact" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.contact}</a>
             </div>
             
-            {/* CV Download CTA */}
+            {/* CV Download CTA — pill en desktop, icono circular en mobile */}
             <a
                 href={settings.cv_url || "/Monardez_Alejo_2026_CV.pdf"}
                 download="Monardez_Alejo_CV.pdf"
-                className="px-4 py-1.5 border border-white text-black bg-white rounded-full hover:bg-transparent hover:text-white transition-all duration-300 z-50 relative shadow-[0_0_15px_rgba(255,255,255,0.12)] cursor-hover"
+                aria-label={t.about.downloadCV}
+                title={t.about.downloadCV}
+                className="hidden md:inline-flex items-center px-4 py-1.5 border border-white text-black bg-white rounded-full hover:bg-transparent hover:text-white transition-all duration-300 z-50 relative shadow-[0_0_15px_rgba(255,255,255,0.12)] cursor-hover"
             >
                 <span className="text-[10px] font-sans tracking-widest uppercase font-bold">{t.about.downloadCV}</span>
+            </a>
+            <a
+                href={settings.cv_url || "/Monardez_Alejo_2026_CV.pdf"}
+                download="Monardez_Alejo_CV.pdf"
+                aria-label={t.about.downloadCV}
+                title={t.about.downloadCV}
+                className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/30 bg-white/5 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300 z-50 relative shadow-[0_0_15px_rgba(255,255,255,0.08)]"
+            >
+                <IoDocumentTextOutline className="text-[17px]" />
             </a>
 
             {/* Language Toggle */}
@@ -266,50 +278,116 @@ export default function PortfolioHome() {
       {/* Initialize Smooth Scroll */}
       <SmoothScroll />
       
-      {/* Hero Section */}
-      <header ref={heroRef} className="relative min-h-screen flex flex-col justify-center px-6 sm:px-12 pt-20 overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 h-full items-center pb-4 md:pb-0 relative">
-            <div className="md:col-span-12 z-20 relative mix-blend-difference">
+      {/* Hero Section — usamos 100svh (small viewport) en mobile para que respete la UI del browser */}
+      <header ref={heroRef} className="relative min-h-[100svh] md:min-h-screen flex flex-col justify-center px-6 sm:px-12 pt-20 overflow-hidden">
+
+        {/* ============ DESKTOP LAYOUT ============ */}
+        <div className="hidden md:grid grid-cols-12 gap-8 h-full items-center pb-0 relative">
+            <div className="col-span-12 z-20 relative mix-blend-difference">
                 <p className="font-sans text-sm tracking-[0.3em] uppercase mb-8 text-gray-500 ml-2">{t.hero.role}</p>
                 <HeroTitle />
 
-                <div className="mt-6 md:mt-12 flex flex-wrap gap-x-6 gap-y-4 md:gap-x-8 md:gap-y-6 ml-2 max-w-[80vw] md:max-w-2xl">
+                <div className="mt-12 flex flex-wrap gap-x-8 gap-y-6 ml-2 max-w-2xl">
                     {resolvedSkills.map((skill, index) => (
                         <div key={index} className="flex flex-col items-center gap-1 group cursor-default">
-                            <span className="text-xl md:text-2xl text-white/40 group-hover:text-white transition-colors duration-300">
+                            <span className="text-2xl text-white/40 group-hover:text-white transition-colors duration-300">
                                 {skill.icon}
                             </span>
-                            <span className="text-[8px] md:text-[10px] uppercase tracking-widest text-white/40 group-hover:text-white transition-colors duration-300">
+                            <span className="text-[10px] uppercase tracking-widest text-white/40 group-hover:text-white transition-colors duration-300">
                                 {skill.name}
                             </span>
                         </div>
                     ))}
                 </div>
             </div>
-            
-            {/* Hero Image / Graphic - Floating/Background position to allow overlap */}
-            <div className="absolute top-[30%] md:top-1/2 right-0 translate-y-0 md:-translate-y-1/2 w-[90vw] md:w-[50vw] h-[70vh] md:h-[90vh] z-10 opacity-100 pointer-events-none select-none">
-                <motion.div 
+
+            {/* Foto desktop — flotante a la derecha como fondo */}
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[50vw] h-[90vh] z-10 opacity-100 pointer-events-none select-none">
+                <motion.div
                     initial={{ opacity: 0, x: 50 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
                     className="w-full h-full relative"
                 >
-                    {/* Gradient Masks to fade image into background */}
-                    {/* Left Fade (stronger for text overlap) */}
                     <div className="absolute inset-y-0 left-0 w-[50%] bg-gradient-to-r from-brand-bg via-brand-bg/80 to-transparent z-20"></div>
-                    {/* Bottom Fade */}
                     <div className="absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-brand-bg via-brand-bg/80 to-transparent z-20"></div>
-                    {/* Top Fade */}
                     <div className="absolute inset-x-0 top-0 h-[20%] bg-gradient-to-b from-brand-bg via-brand-bg/80 to-transparent z-20"></div>
-                    {/* Right Fade */}
                     <div className="absolute inset-y-0 right-0 w-[15%] bg-gradient-to-l from-brand-bg to-transparent z-20"></div>
-
                     <img
                         src={heroPortrait}
                         alt="Alejo Monardez"
                         className="w-full h-full object-cover grayscale brightness-75 contrast-125"
                     />
+                </motion.div>
+            </div>
+        </div>
+
+        {/* ============ MOBILE LAYOUT — label arriba, nombre+skills abajo, cara libre en el medio ============ */}
+        <div className="md:hidden relative flex-1 flex flex-col justify-between pt-6 pb-16">
+
+            {/* Foto fondo: ocupa toda la pantalla, la cara queda en el área media-superior libre */}
+            <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 1.5, ease: 'easeOut' }}
+                className="absolute inset-0 z-0 pointer-events-none select-none"
+            >
+                <div className="relative w-full h-full">
+                    {/* Gradient masks — afina los bordes para integrar al fondo */}
+                    <div className="absolute inset-y-0 left-0 w-[35%] bg-gradient-to-r from-brand-bg via-brand-bg/60 to-transparent z-20"></div>
+                    <div className="absolute inset-x-0 top-0 h-[14%] bg-gradient-to-b from-brand-bg via-brand-bg/60 to-transparent z-20"></div>
+                    <div className="absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-brand-bg via-brand-bg/85 to-transparent z-20"></div>
+                    <div className="absolute inset-y-0 right-0 w-[10%] bg-gradient-to-l from-brand-bg via-brand-bg/30 to-transparent z-20"></div>
+
+                    <img
+                        src={heroPortrait}
+                        alt="Alejo Monardez"
+                        className="w-full h-full object-cover object-[60%_22%] grayscale brightness-80 contrast-120"
+                    />
+                </div>
+            </motion.div>
+
+            {/* TOP — etiqueta de rol */}
+            <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.2 }}
+                className="relative z-20 mix-blend-difference px-1"
+            >
+                <p className="font-sans text-[10px] tracking-[0.32em] uppercase text-white/65 leading-relaxed max-w-[75%]">
+                    {t.hero.role}
+                </p>
+            </motion.div>
+
+            {/* BOTTOM — título grande + skills, dejando la cara libre arriba */}
+            <div className="relative z-20 mix-blend-difference">
+                <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 1, delay: 0.4 }}
+                    className="font-serif text-[15.5vw] leading-[0.92] tracking-tight mb-8"
+                >
+                    <span className="block">Alejo</span>
+                    <span className="block">Monardez</span>
+                </motion.h1>
+
+                {/* Skills — TODOS visibles, wrap en 2-3 filas, mismo estilo del desktop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.9, delay: 0.65 }}
+                    className="flex flex-wrap gap-x-4 gap-y-4 max-w-[88vw]"
+                >
+                    {resolvedSkills.map((skill, index) => (
+                        <div key={index} className="flex flex-col items-center gap-1 cursor-default">
+                            <span className="text-[19px] text-white/70">
+                                {skill.icon}
+                            </span>
+                            <span className="text-[7.5px] uppercase tracking-[0.15em] text-white/55 whitespace-nowrap">
+                                {skill.name}
+                            </span>
+                        </div>
+                    ))}
                 </motion.div>
             </div>
         </div>

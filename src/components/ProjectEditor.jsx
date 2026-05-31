@@ -23,6 +23,9 @@ const EMPTY = {
     demo_url: '',
     demo_url_custom: false, // si el usuario tocó la URL manualmente
     tech: [],
+    credentials: [], // [{ label, user, password, note }]
+    status: 'production', // 'demo' | 'production' | 'wip'
+    github_url: '',
     featured: false,
     sort_order: 0
 };
@@ -125,6 +128,17 @@ export default function ProjectEditor() {
         setForm(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
     };
 
+    // Marca una imagen como portada — la mueve al índice 0 sin perder el orden relativo de las demás
+    const setAsCover = (idx) => {
+        if (idx === 0) return;
+        setForm(prev => {
+            const arr = [...prev.images];
+            const [picked] = arr.splice(idx, 1);
+            arr.unshift(picked);
+            return { ...prev, images: arr };
+        });
+    };
+
     const moveImage = (idx, dir) => {
         setForm(prev => {
             const arr = [...prev.images];
@@ -133,6 +147,26 @@ export default function ProjectEditor() {
             [arr[idx], arr[target]] = [arr[target], arr[idx]];
             return { ...prev, images: arr };
         });
+    };
+
+    // ---- Credenciales de demo ----
+    const handleAddCredential = () => {
+        setForm(prev => ({
+            ...prev,
+            credentials: [...prev.credentials, { label: '', user: '', password: '', note: '' }],
+        }));
+    };
+    const handleRemoveCredential = (idx) => {
+        setForm(prev => ({
+            ...prev,
+            credentials: prev.credentials.filter((_, i) => i !== idx),
+        }));
+    };
+    const handleCredentialChange = (idx, field, value) => {
+        setForm(prev => ({
+            ...prev,
+            credentials: prev.credentials.map((c, i) => i === idx ? { ...c, [field]: value } : c),
+        }));
     };
 
     // ---- Categoría ----
@@ -330,7 +364,10 @@ export default function ProjectEditor() {
                 // Comunes
                 images: form.images,
                 demo_url: form.demo_url,
+                status: form.status,
+                github_url: form.github_url,
                 tech: form.tech,
+                credentials: form.credentials,
                 featured: form.featured,
                 sort_order: form.sort_order
             };
@@ -387,6 +424,9 @@ export default function ProjectEditor() {
             demo_url: p.demo_url || '',
             demo_url_custom: (p.demo_url || '') !== autoUrl,
             tech: Array.isArray(p.tech) ? p.tech : [],
+            credentials: Array.isArray(p.credentials) ? p.credentials : [],
+            status: p.status || 'production',
+            github_url: p.github_url || '',
             featured: !!p.featured,
             sort_order: p.sort_order || 0
         });
@@ -740,8 +780,8 @@ export default function ProjectEditor() {
                     )}
                 </Section>
 
-                {/* Bloque 2: URL del demo */}
-                <Section title="02. URL del demo">
+                {/* Bloque 2: URL del demo + estado + GitHub */}
+                <Section title="02. URL del demo & estado">
                     <div className="flex items-center justify-between mb-3">
                         <p className="text-xs text-white/50">
                             {form.demo_url_custom
@@ -762,37 +802,85 @@ export default function ProjectEditor() {
                         value={form.demo_url}
                         onChange={e => handleChange('demo_url', e.target.value)}
                         disabled={!form.demo_url_custom}
-                        className={`${inputCls} ${!form.demo_url_custom ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`${inputCls} ${!form.demo_url_custom ? 'opacity-60 cursor-not-allowed' : ''} mb-6`}
                         placeholder="https://miproyecto.alejomonardez.com"
                     />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Estado del proyecto */}
+                        <Field label="Estado del proyecto">
+                            <div className="flex gap-2 mt-1 flex-wrap">
+                                {[
+                                    { value: 'production', label: '🟢 Producción', desc: 'Sistema real en uso' },
+                                    { value: 'demo',       label: '🟡 Demo',        desc: 'Versión de prueba' },
+                                    { value: 'wip',        label: '🔵 En desarrollo', desc: 'Work in progress' },
+                                ].map(opt => (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        title={opt.desc}
+                                        onClick={() => handleChange('status', opt.value)}
+                                        className={`text-[10px] uppercase tracking-widest border px-4 py-2 transition-colors ${
+                                            form.status === opt.value
+                                                ? 'border-white bg-white text-black'
+                                                : 'border-white/20 text-white/60 hover:border-white hover:text-white'
+                                        }`}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </Field>
+
+                        {/* GitHub URL */}
+                        <Field label="Repositorio GitHub (opcional)">
+                            <input
+                                type="url"
+                                value={form.github_url}
+                                onChange={e => handleChange('github_url', e.target.value)}
+                                className={inputCls}
+                                placeholder="https://github.com/SoyMonardez/mi-repo"
+                            />
+                        </Field>
+                    </div>
                 </Section>
 
                 {/* Bloque 3: Imágenes */}
                 <Section title={`03. Galería de imágenes (${form.images.length})`}>
                     <p className="text-xs text-white/50 mb-4">
-                        La primera imagen es la portada. Las demás rotan automáticamente en el carrusel del proyecto.
+                        La <span className="text-white font-semibold">portada</span> es la imagen que se ve en la grilla de Proyectos. Click en <span className="text-white">★ Portada</span> sobre cualquier imagen para hacerla portada.
                     </p>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                         {form.images.map((url, idx) => (
-                            <div key={idx} className="relative group border border-white/10 bg-neutral-900 aspect-[4/3] overflow-hidden">
+                            <div key={idx} className={`relative group border ${idx === 0 ? 'border-white shadow-[0_0_0_2px_rgba(255,255,255,0.15)]' : 'border-white/10'} bg-neutral-900 aspect-[4/3] overflow-hidden`}>
                                 <img src={url} alt={`img-${idx}`} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.opacity = '0.2'; }} />
                                 {idx === 0 && (
-                                    <span className="absolute top-1 left-1 text-[8px] uppercase tracking-widest bg-white text-black px-2 py-0.5">
-                                        PORTADA
+                                    <span className="absolute top-1 left-1 text-[8px] uppercase tracking-widest bg-white text-black px-2 py-0.5 flex items-center gap-1">
+                                        ★ Portada
                                     </span>
                                 )}
                                 <span className="absolute top-1 right-1 text-[9px] bg-black/60 text-white px-1.5 py-0.5 rounded">
                                     {idx + 1}
                                 </span>
-                                <div className="absolute inset-x-0 bottom-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-center px-2 py-1 text-[10px] uppercase tracking-widest">
-                                    <div className="flex gap-1">
-                                        <button type="button" onClick={() => moveImage(idx, -1)} disabled={idx === 0} className="hover:text-white disabled:opacity-30">←</button>
-                                        <button type="button" onClick={() => moveImage(idx, 1)} disabled={idx === form.images.length - 1} className="hover:text-white disabled:opacity-30">→</button>
+                                {/* Hover overlay con acciones — "Hacer portada" prominente */}
+                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                                    {idx !== 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setAsCover(idx)}
+                                            className="w-full text-[10px] uppercase tracking-widest bg-white text-black py-1.5 font-bold hover:bg-gray-200 transition-colors"
+                                        >
+                                            ★ Hacer portada
+                                        </button>
+                                    )}
+                                    <div className="flex w-full gap-1 text-[10px] uppercase tracking-widest">
+                                        <button type="button" onClick={() => moveImage(idx, -1)} disabled={idx === 0} className="flex-1 border border-white/30 py-1 hover:bg-white/10 disabled:opacity-30">←</button>
+                                        <button type="button" onClick={() => moveImage(idx, 1)} disabled={idx === form.images.length - 1} className="flex-1 border border-white/30 py-1 hover:bg-white/10 disabled:opacity-30">→</button>
+                                        <button type="button" onClick={() => handleRemoveImage(idx)} className="flex-1 border border-red-500/30 text-red-300 py-1 hover:bg-red-500 hover:text-black hover:border-red-500 transition-colors">
+                                            ✕
+                                        </button>
                                     </div>
-                                    <button type="button" onClick={() => handleRemoveImage(idx)} className="text-red-300 hover:text-red-500">
-                                        Eliminar
-                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -808,8 +896,87 @@ export default function ProjectEditor() {
                     </div>
                 </Section>
 
-                {/* Bloque 4: Opciones + tech */}
-                <Section title="04. Opciones">
+                {/* Bloque 4: Credenciales de demo */}
+                <Section title={`04. Credenciales de demo (${form.credentials.length})`}>
+                    <p className="text-xs text-white/50 mb-4">
+                        Si el proyecto tiene login, agregá las credenciales acá. Se muestran en la página de Proyectos
+                        con un botón "Copiar" para que cualquiera pueda probar la demo sin pedírtelas.
+                        <br/>
+                        <span className="text-white/40">Ejemplo: <span className="text-white/70 font-mono">Admin / admin / demo1234</span></span>
+                    </p>
+
+                    {form.credentials.length === 0 && (
+                        <div className="border border-dashed border-white/15 p-6 text-center mb-4">
+                            <p className="text-xs uppercase tracking-widest text-white/30 mb-3">
+                                Sin credenciales cargadas
+                            </p>
+                            <p className="text-[10px] text-white/40">
+                                Dejá vacío si el proyecto no requiere login.
+                            </p>
+                        </div>
+                    )}
+
+                    <div className="space-y-3 mb-4">
+                        {form.credentials.map((cred, idx) => (
+                            <div key={idx} className="border border-white/15 p-4 bg-white/[0.02]">
+                                <div className="flex items-start gap-3 mb-3">
+                                    <input
+                                        value={cred.label || ''}
+                                        onChange={e => handleCredentialChange(idx, 'label', e.target.value)}
+                                        placeholder="Rol (ej: Admin, Vendedor, Cliente)"
+                                        className={`${inputCls} flex-1 max-w-[200px]`}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveCredential(idx)}
+                                        className="text-[10px] uppercase tracking-widest text-red-300 hover:text-red-500 px-3 py-1 border border-red-500/30 hover:border-red-500 transition-colors whitespace-nowrap"
+                                    >
+                                        × Quitar
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <Field label="Usuario">
+                                        <input
+                                            value={cred.user || ''}
+                                            onChange={e => handleCredentialChange(idx, 'user', e.target.value)}
+                                            placeholder="admin"
+                                            autoComplete="off"
+                                            className={inputCls}
+                                        />
+                                    </Field>
+                                    <Field label="Contraseña">
+                                        <input
+                                            value={cred.password || ''}
+                                            onChange={e => handleCredentialChange(idx, 'password', e.target.value)}
+                                            placeholder="demo1234"
+                                            autoComplete="off"
+                                            className={`${inputCls} font-mono`}
+                                        />
+                                    </Field>
+                                </div>
+                                <Field label="Nota (opcional)" className="mt-3">
+                                    <input
+                                        value={cred.note || ''}
+                                        onChange={e => handleCredentialChange(idx, 'note', e.target.value)}
+                                        placeholder="Ej: acceso a todas las funciones"
+                                        className={inputCls}
+                                    />
+                                </Field>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={handleAddCredential}
+                        className="w-full border border-dashed border-white/20 py-3 text-[10px] uppercase tracking-widest text-white/50 hover:border-white hover:text-white hover:bg-white/5 transition-all"
+                    >
+                        + Agregar credencial
+                    </button>
+                </Section>
+
+                {/* Bloque 5: Opciones + tech */}
+                <Section title="05. Opciones">
                     <label className="flex items-center gap-3 cursor-pointer select-none mb-6">
                         <input
                             type="checkbox"
@@ -924,7 +1091,7 @@ export default function ProjectEditor() {
                                 <div key={p.id} className="group flex flex-col md:flex-row md:items-center gap-4 border border-white/10 p-4 hover:bg-white/5 transition-colors">
                                     <div className="w-full md:w-32 h-20 bg-neutral-900 overflow-hidden flex-shrink-0 relative">
                                         {cover && (
-                                            <img src={cover} alt={p.title} className="w-full h-full object-cover grayscale" onError={(e) => { e.currentTarget.style.opacity = '0.2'; }} />
+                                            <img src={cover} alt={p.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.opacity = '0.2'; }} />
                                         )}
                                         {imgCount > 1 && (
                                             <span className="absolute bottom-1 right-1 text-[9px] bg-black/70 text-white/80 px-1.5 rounded">{imgCount}</span>

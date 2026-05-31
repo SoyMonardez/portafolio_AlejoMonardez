@@ -1,0 +1,160 @@
+# =====================================================================
+# Stack completo del portfolio — listo para deployar en el VPS
+#
+# Arquitectura:
+#   - mysql:        base de datos (persistente en volume)
+#   - backend:      API Node (depende de mysql healthy)
+#   - ai-service:   microservicio IA (independiente)
+#   - frontend:     Nginx que sirve el SPA + proxea /api, /ai, /uploads
+#
+# Uso:
+#   1. cp .env.docker.example .env  (completar valores)
+#   2. docker compose up -d --build
+#   3. Logs:    docker compose logs -f [servicio]
+#   4. Update:  git pull && docker compose up -d --build
+#   5. Reset DB: docker compose down -v  (¡borra el volumen!)
+# =====================================================================
+
+services:
+
+  # ───────────────────────────────────────────────────────────────
+  # MySQL 8 — única instancia accesible solo desde la red interna
+  # ───────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: portfolio-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE:      ${DB_NAME:-portfolio_moni}
+      MYSQL_USER:          ${DB_USER:-portfolio}
+      MYSQL_PASSWORD:      ${DB_PASS}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Se ejecuta SOLO la primera vez (cuando /var/lib/mysql está vacío)
+      - ./db_export.sql:/docker-entrypoint-initdb.d/01_seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - internal
+
+  # ───────────────────────────────────────────────────────────────
+  # Backend Node — API REST + uploads + email notifs
+  # ───────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+    container_name: portfolio-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-portfolio}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME:-portfolio_moni}
+
+      JWT_SECRET:     ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+
+      # Uploads: el path es relativo al WORKDIR del container (/app)
+      UPLOAD_DIR:         /var/www/uploads/projects
+      UPLOAD_MAX_MB:      5
+      UPLOAD_PUBLIC_BASE: /uploads/projects
+
+      SMTP_HOST:   ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT:   ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER:   ${SMTP_USER}
+      SMTP_PASS:   ${SMTP_PASS}
+      NOTIFY_TO:   ${NOTIFY_TO}
+
+      CONTACT_RATE_MAX:        ${CONTACT_RATE_MAX:-3}
+      CONTACT_RATE_WINDOW_MIN: ${CONTACT_RATE_WINDOW_MIN:-60}
+    volumes:
+      # Compartido con el frontend para que Nginx pueda servir /uploads/*
+      - uploads_data:/var/www/uploads
+    networks:
+      - internal
+      - public
+
+  # ───────────────────────────────────────────────────────────────
+  # AI Service — Groq + Llama 3.3
+  # ───────────────────────────────────────────────────────────────
+  ai-service:
+    build:
+      context: ./ai-service
+    container_name: portfolio-ai
+    restart: unless-stopped
+    environment:
+      NODE_ENV:        production
+      PORT:            3001
+      GROQ_API_KEY:    ${GROQ_API_KEY}
+      GROQ_MODEL:      ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      AI_SHARED_TOKEN: ${AI_SHARED_TOKEN:-}
+    networks:
+      - public
+
+  # ───────────────────────────────────────────────────────────────
+  # Frontend — Nginx con el SPA + reverse proxy
+  # ───────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: portfolio-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - ai-service
+    ports:
+      # Único puerto expuesto al host. El nginx del VPS hace TLS y proxea acá.
+      - "${HOST_PORT:-8080}:80"
+    volumes:
+      # Solo lectura — el backend escribe, el frontend solo sirve
+      - uploads_data:/var/www/uploads:ro
+    networks:
+      - public
+      # nginx_network es la red del Nginx Proxy Manager (NPM) en el host,
+      # que hace SSL + reverse proxy a https://alejomonardez.com.
+      # Está marcada como `external` abajo porque la creó el container del NPM.
+      - npm
+
+# ───────────────────────────────────────────────────────────────
+# Volúmenes
+# ───────────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+# ───────────────────────────────────────────────────────────────
+# Networks aisladas
+#   internal: solo backend ↔ mysql (mysql NO accesible desde frontend/ai)
+#   public:   backend/ai/frontend ↔ entre sí
+# ───────────────────────────────────────────────────────────────
+networks:
+  internal:
+    driver: bridge
+  public:
+    driver: bridge
+  # Red externa del Nginx Proxy Manager (creada por su propio compose).
+  # El portfolio-frontend se conecta acá para ser proxy-eado por SSL.
+  npm:
+    external: true
+    name: nginx_network

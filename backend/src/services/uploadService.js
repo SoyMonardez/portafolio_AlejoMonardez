@@ -2,9 +2,32 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import { PDFDocument } from 'pdf-lib';
 import { env } from '../config/env.js';
 import { badRequest } from '../utils/httpError.js';
 import { slugify } from '../utils/slug.js';
+
+/**
+ * Reescribe los metadatos de un PDF para que muestren el nombre correcto
+ * en la pestaña del browser y en el visor PDF.
+ */
+async function patchPdfMeta(filePath) {
+    try {
+        const bytes = await fs.readFile(filePath);
+        const pdfDoc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+        pdfDoc.setTitle('Alejo Monardez — Curriculum Vitae');
+        pdfDoc.setAuthor('Alejo Monardez');
+        pdfDoc.setSubject('Curriculum Vitae — Desarrollador Full Stack');
+        pdfDoc.setKeywords(['Alejo Monardez', 'Full Stack', 'React', 'Node.js', 'CV', 'Resume']);
+        pdfDoc.setCreator('alejomonardez.com');
+        pdfDoc.setProducer('alejomonardez.com');
+        const patched = await pdfDoc.save();
+        await fs.writeFile(filePath, patched);
+    } catch (err) {
+        // No bloqueante: si el PDF está cifrado o corrompido lo dejamos tal cual
+        console.warn('[uploadService] patchPdfMeta skipped:', err.message);
+    }
+}
 
 // ─────────────────── Configuración base ───────────────────
 const ALLOWED_IMAGE_MIME = {
@@ -84,6 +107,12 @@ export const uploadService = {
     buildCvUrl(file) {
         if (!file) throw badRequest('No se recibió archivo');
         return `${cvPublicBase}/${file.filename}`;
+    },
+
+    /** Reescribe los metadatos del PDF para que muestren el nombre del dueño. */
+    patchCvMeta(file) {
+        const filePath = path.join(cvDirAbs, file.filename);
+        return patchPdfMeta(filePath);  // no-throw: falla silenciosamente
     },
 
     /**

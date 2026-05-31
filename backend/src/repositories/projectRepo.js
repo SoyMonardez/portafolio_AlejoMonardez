@@ -7,7 +7,7 @@ const SELECT_FIELDS = `
     badge, badge_en,
     description_short, description_short_en,
     description, description_en,
-    images, demo_url, tech, featured, sort_order
+    images, demo_url, status, github_url, tech, credentials, featured, sort_order
 `;
 
 /**
@@ -18,9 +18,12 @@ function hydrate(row) {
     if (!row) return null;
     return {
         ...row,
-        tech:     safeJson(row.tech, []),
-        images:   safeJson(row.images, []),
-        featured: Number(row.featured) === 1,
+        tech:        safeJson(row.tech, []),
+        images:      safeJson(row.images, []),
+        credentials: safeJson(row.credentials, []),
+        featured:    Number(row.featured) === 1,
+        status:      row.status || 'production',
+        github_url:  row.github_url || '',
         title_en:             row.title_en             ?? '',
         category_en:          row.category_en          ?? '',
         badge_en:             row.badge_en             ?? '',
@@ -66,8 +69,8 @@ export const projectRepo = {
             `INSERT INTO projects
                 (slug, title, title_en, category, category_en, badge, badge_en,
                  description_short, description_short_en,
-                 description, description_en, images, demo_url, tech, featured, sort_order)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+                 description, description_en, images, demo_url, status, github_url, tech, credentials, featured, sort_order)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             [
                 data.slug, data.title, data.title_en, data.category, data.category_en,
                 data.badge, data.badge_en,
@@ -75,7 +78,10 @@ export const projectRepo = {
                 data.description || '', data.description_en || '',
                 JSON.stringify(data.images || []),
                 data.demo_url || '',
+                data.status || 'production',
+                data.github_url || '',
                 JSON.stringify(data.tech || []),
+                JSON.stringify(data.credentials || []),
                 data.featured ? 1 : 0,
                 data.sort_order || 0,
             ]
@@ -87,13 +93,14 @@ export const projectRepo = {
         const keys = Object.keys(fields);
         if (!keys.length) return 0;
 
+        const JSON_COLS = new Set(['images', 'tech', 'credentials']);
         const sets = [];
         const params = [];
         for (const k of keys) {
             sets.push(`${k} = ?`);
             const v = fields[k];
             // Las columnas JSON deben serializarse
-            params.push((k === 'images' || k === 'tech') ? JSON.stringify(v) : v);
+            params.push(JSON_COLS.has(k) ? JSON.stringify(v) : v);
         }
         params.push(id);
 

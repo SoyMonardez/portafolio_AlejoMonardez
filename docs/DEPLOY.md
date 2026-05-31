@@ -1,7 +1,7 @@
-# Deploy en VPS Hostinger
+# Deploy en VPS Hostinger con Docker
 
-Guía para desplegar todo el stack (frontend + backend + ai-service) en tu VPS.
-Asumimos Ubuntu 22.04+ y dominio `alejomonardez.com` apuntando a la IP del VPS.
+Guía completa para deployar todo el stack en tu VPS de Hostinger usando Docker.
+Asumimos Ubuntu 22.04+ con dominio `alejomonardez.com` apuntando a la IP del VPS.
 
 ## Arquitectura final
 
@@ -9,89 +9,98 @@ Asumimos Ubuntu 22.04+ y dominio `alejomonardez.com` apuntando a la IP del VPS.
 Internet
    │
    ▼
-Nginx (puerto 80/443, SSL con Let's Encrypt)
+Nginx del host (puerto 80/443, SSL con Certbot)
    │
-   ├──  /            →  /var/www/portfolio/dist/         (estático, React build)
-   ├──  /api/*       →  http://localhost:3000            (backend Node)
-   ├──  /ai/*        →  http://localhost:3001            (ai-service)
-   └──  /uploads/*   →  /var/www/portfolio/uploads/      (estático)
+   ▼ proxy_pass
+localhost:8080
+   │
+   ▼
+┌──────────────────────────────────────────────┐
+│  Container "frontend" (Nginx interno)        │
+│                                              │
+│  /            → SPA estático (dist/)         │
+│  /api/*       → backend:3000                 │
+│  /ai/*        → ai-service:3001              │
+│  /uploads/*   → volumen compartido           │
+└──────────────────────────────────────────────┘
+              │           │
+              ▼           ▼
+       ┌──────────┐  ┌──────────┐
+       │ backend  │  │ ai-svc   │
+       │  Node    │  │  Node    │
+       └────┬─────┘  └──────────┘
+            │
+            ▼
+       ┌──────────┐
+       │  mysql   │
+       │   8.0    │
+       └──────────┘
 ```
 
-## 1. Servidor base
+---
+
+## 1. Preparar el VPS (una sola vez)
 
 ```bash
-# Conectarte al VPS
-ssh root@TU_IP
+ssh root@TU_IP_DEL_VPS
 
-# Node.js 20 LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-apt install -y nodejs
+# Docker + compose plugin
+curl -fsSL https://get.docker.com | sh
+apt install -y docker-compose-plugin git nginx certbot python3-certbot-nginx
 
-# MySQL
-apt install -y mysql-server
-mysql_secure_installation
-
-# PM2 (process manager) + Nginx
-npm install -g pm2
-apt install -y nginx certbot python3-certbot-nginx
+# Verificar
+docker --version
+docker compose version
 ```
 
-## 2. Código y base de datos
+## 2. Clonar el código
 
 ```bash
-mkdir -p /var/www/portfolio
-cd /var/www/portfolio
-# Subí el código (git clone, scp, rsync, lo que prefieras)
-
-# Crear DB
-mysql -u root -p
-CREATE DATABASE portfolio_moni CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'portfolio'@'localhost' IDENTIFIED BY 'CONTRASEÑA_FUERTE';
-GRANT ALL ON portfolio_moni.* TO 'portfolio'@'localhost';
-EXIT;
-
-mysql -u portfolio -p portfolio_moni < setup.sql
+mkdir -p /var/www
+cd /var/www
+git clone https://github.com/TU_USUARIO/portafolio.git portfolio
+cd portfolio
 ```
 
-## 3. Backend (Node)
+## 3. Configurar variables de entorno
 
 ```bash
-cd /var/www/portfolio/backend
-npm install --omit=dev
-cp .env.example .env
-nano .env   # llenar: DB_PASS, JWT_SECRET (random 48 bytes), SMTP_*
-
-# Crear admin
-node scripts/create-admin.js alejo TuPasswordFuerte
-
-# Arrancar con PM2
-pm2 start src/server.js --name portfolio-api
-pm2 save
-pm2 startup   # ejecutá la línea que te imprime — hace que arranque al boot
+cp .env.docker.example .env
+nano .env
 ```
 
-## 4. AI Service
+Completá todos los valores. Para generar el `JWT_SECRET`:
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
+
+> **Importante:** asegurate de que `db_export.sql` esté en la raíz del proyecto.
+> Es el dump de tu DB local. Se carga automáticamente la primera vez que arranca MySQL.
+
+## 4. Levantar el stack
 
 ```bash
-cd /var/www/portfolio/ai-service
-npm install --omit=dev
-cp .env.example .env
-nano .env   # llenar GROQ_API_KEY
-
-pm2 start server.js --name portfolio-ai
-pm2 save
+docker compose up -d --build
 ```
 
-## 5. Frontend (build estático)
-
+Verificá que todo levantó:
 ```bash
-cd /var/www/portfolio
-npm install
-npm run build
-# Resultado: ./dist
+docker compose ps
 ```
 
-## 6. Nginx
+Tienen que aparecer 4 containers en estado `healthy` o `running`:
+- `portfolio-mysql`
+- `portfolio-backend`
+- `portfolio-ai`
+- `portfolio-frontend`
+
+Logs en vivo:
+```bash
+docker compose logs -f                    # todos
+docker compose logs -f backend            # solo uno
+```
+
+## 5. Configurar el Nginx del host (TLS + dominio)
 
 ```bash
 nano /etc/nginx/sites-available/portfolio
@@ -101,99 +110,104 @@ nano /etc/nginx/sites-available/portfolio
 server {
     listen 80;
     server_name alejomonardez.com www.alejomonardez.com;
-    root /var/www/portfolio/dist;
-    index index.html;
 
-    client_max_body_size 10M;
+    client_max_body_size 12M;
 
-    # Backend Node
-    location /api/ {
-        proxy_pass http://localhost:3000/;
+    location / {
+        proxy_pass http://localhost:8080;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    # AI Service
-    location /ai/ {
-        proxy_pass http://localhost:3001/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
-    # Uploads (servidos directo por Nginx, mucho más rápido)
-    location /uploads/ {
-        alias /var/www/portfolio/uploads/;
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # SPA fallback
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
 }
 ```
 
+Activar y certificado:
 ```bash
 ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/
-nginx -t   # test config
-systemctl reload nginx
+nginx -t && systemctl reload nginx
 
-# SSL
 certbot --nginx -d alejomonardez.com -d www.alejomonardez.com
 ```
 
-## 7. Actualizaciones futuras
+Listo — `https://alejomonardez.com` ya debería responder con tu portfolio.
+
+---
+
+## Operaciones comunes
+
+### Actualizar después de hacer `git push`
 
 ```bash
 cd /var/www/portfolio
 git pull
-
-# Backend o ai-service
-cd backend && npm install --omit=dev && pm2 restart portfolio-api
-cd ../ai-service && npm install --omit=dev && pm2 restart portfolio-ai
-
-# Frontend
-cd .. && npm install && npm run build
-# Nginx sirve dist/ automáticamente, no hace falta restart
+docker compose up -d --build
 ```
 
-## 8. Setup del CORS
+Compose rebuildea solo los containers que cambiaron. Tarda ~30s normalmente.
 
-En `backend/.env`:
-```
-CORS_ORIGINS=https://alejomonardez.com,https://www.alejomonardez.com
-```
-
-## 9. Gmail App Password (notificaciones)
-
-1. Activá 2FA: https://myaccount.google.com/security
-2. Generá App Password: https://myaccount.google.com/apppasswords
-   - App: Mail · Device: Other → "Portfolio"
-3. Pegá los 16 chars en `backend/.env`:
-   ```
-   SMTP_USER=tucorreo@gmail.com
-   SMTP_PASS=xxxxxxxxxxxxxxxx
-   NOTIFY_TO=tucorreo@gmail.com
-   ```
-4. `pm2 restart portfolio-api`
-
-## Verificación
+### Crear/cambiar un admin
 
 ```bash
-# ¿Los servicios están vivos?
-pm2 list
-
-# Logs en vivo
-pm2 logs portfolio-api
-pm2 logs portfolio-ai
-
-# Health checks
-curl https://alejomonardez.com/api/health
-curl https://alejomonardez.com/ai/health
+docker compose exec backend node scripts/create-admin.js alejo NuevoPassword
 ```
+
+### Backup manual de la DB
+
+```bash
+docker compose exec mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" portfolio_moni \
+    > backups/portfolio_$(date +%Y%m%d_%H%M).sql
+```
+
+### Backup automático (cron diario)
+
+```bash
+crontab -e
+```
+```
+0 3 * * * cd /var/www/portfolio && docker compose exec -T mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" portfolio_moni | gzip > /var/backups/portfolio_$(date +\%Y\%m\%d).sql.gz
+```
+
+### Restart de un servicio puntual
+
+```bash
+docker compose restart backend
+```
+
+### Ver uso de recursos
+
+```bash
+docker stats
+```
+
+### Reset total (borra DB y uploads — ¡usar con cuidado!)
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+### Acceder a la DB
+
+```bash
+docker compose exec mysql mysql -u root -p portfolio_moni
+```
+
+---
+
+## Troubleshooting
+
+**El backend no arranca, log dice "No se pudo conectar a MySQL"**
+- MySQL tarda ~20-30s la primera vez. El backend reintenta vía healthcheck. Esperá un minuto.
+
+**El email no llega**
+- Verificá los logs: `docker compose logs backend | grep mail`
+- Si dice `BadCredentials`: tu `SMTP_PASS` está mal. Generá nueva App Password en Google.
+
+**Imágenes subidas no se ven**
+- Verificá que el volumen `uploads_data` esté montado en ambos containers: `docker compose config | grep -A2 uploads`
+
+**Puerto 8080 ocupado en el host**
+- Cambiá `HOST_PORT=8081` en `.env` y reiniciá: `docker compose up -d`

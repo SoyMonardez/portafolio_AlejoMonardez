@@ -32,6 +32,8 @@ dist-ssr
 .env.*.local
 backend/.env
 ai-service/.env
+# .env del docker-compose (production secrets)
+/.env
 
 # Uploads (las imágenes de proyectos se generan en runtime)
 uploads/projects/*
@@ -40,4 +42,14 @@ uploads/projects/*
 # IDE / Agent configs
 .agent/
 .claude/
+
+# MCP servers config (contiene API tokens — NO subir)
+.mcp.json
+
+# Dump de la DB con admins/hashes — solo local + rsync directo al VPS
+db_export.sql
+
+# Scripts de deploy con datos de VPS (IP/dominio personal) — opcional
+# Comentá si querés trackear el script
+# deploy_to_vps.sh
 
