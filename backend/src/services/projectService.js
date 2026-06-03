@@ -1,7 +1,13 @@
 import { projectRepo } from '../repositories/projectRepo.js';
 import { slugify } from '../utils/slug.js';
 import { badRequest } from '../utils/httpError.js';
+import { cache } from '../utils/cache.js';
 import crypto from 'crypto';
+
+// TTL del cache de proyectos: 5 min. Igual se invalida en cada escritura,
+// así que el TTL es solo un techo de seguridad por si algo cambia fuera de la app.
+const PROJECTS_TTL = 5 * 60 * 1000;
+const CACHE_PREFIX = 'projects:';
 
 /**
  * Normaliza el campo `images` aceptando tanto la forma nueva (array) como
@@ -33,7 +39,10 @@ function normalizeCredentials(creds) {
 
 export const projectService = {
     async list({ featuredOnly = false } = {}) {
-        return projectRepo.findAll({ featuredOnly });
+        // Cache por variante (todos vs solo destacados). Se calcula una vez y
+        // se sirve desde memoria hasta la próxima escritura o el TTL.
+        const key = `${CACHE_PREFIX}${featuredOnly ? 'featured' : 'all'}`;
+        return cache.wrap(key, PROJECTS_TTL, () => projectRepo.findAll({ featuredOnly }));
     },
 
     async create(data) {
@@ -68,6 +77,7 @@ export const projectService = {
             sort_order:           Number.isFinite(data.sort_order) ? data.sort_order : 0,
         });
 
+        cache.delPrefix(CACHE_PREFIX); // invalidar listados cacheados
         return { id, slug };
     },
 
@@ -103,11 +113,15 @@ export const projectService = {
             fields.sort_order = Number(data.sort_order) || 0;
         }
 
-        return projectRepo.update(id, fields);
+        const res = await projectRepo.update(id, fields);
+        cache.delPrefix(CACHE_PREFIX); // invalidar listados cacheados
+        return res;
     },
 
     async delete(id) {
         if (!id) throw badRequest('Falta id');
-        return projectRepo.delete(id);
+        const res = await projectRepo.delete(id);
+        cache.delPrefix(CACHE_PREFIX); // invalidar listados cacheados
+        return res;
     },
 };

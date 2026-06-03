@@ -5,9 +5,10 @@ import { asyncHandler } from '../middlewares/asyncHandler.js';
 
 const router = Router();
 
-// Público
+// Público — Cache-Control para que browser/CDN cacheen 60s y revaliden en bg
 router.get('/', asyncHandler(async (req, res) => {
     const featuredOnly = req.query.featured === '1';
+    res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
     res.json(await projectService.list({ featuredOnly }));
 }));
 

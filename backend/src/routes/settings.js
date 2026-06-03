@@ -7,6 +7,7 @@ const router = Router();
 
 // Público — devuelve emails ofuscados (anti-bot)
 router.get('/', asyncHandler(async (_req, res) => {
+    res.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=600');
     res.json(await settingsService.getPublic());
 }));
 

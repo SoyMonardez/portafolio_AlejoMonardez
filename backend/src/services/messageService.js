@@ -1,6 +1,11 @@
 import { messageRepo } from '../repositories/messageRepo.js';
 import { mailService } from './mailService.js';
 import { badRequest } from '../utils/httpError.js';
+import { jobQueue } from '../utils/jobQueue.js';
+
+// Handler de la cola: envía la notificación por email en 2do plano.
+// Con reintentos automáticos si el SMTP falla momentáneamente.
+jobQueue.register('email:new-message', (payload) => mailService.notifyNewMessage(payload));
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const sanitizePhone = (raw) => {
@@ -42,8 +47,10 @@ export const messageService = {
 
         const id = await messageRepo.create(safe);
 
-        // Notificación por email — no bloqueamos la respuesta si SMTP falla
-        mailService.notifyNewMessage({ name, email, phone, message }).catch(() => {});
+        // Notificación por email → a la cola en 2do plano.
+        // El usuario recibe la respuesta al instante; el email se manda después
+        // (con reintentos). No esperamos al SMTP.
+        jobQueue.enqueue('email:new-message', { name, email, phone, message });
 
         return { id };
     },

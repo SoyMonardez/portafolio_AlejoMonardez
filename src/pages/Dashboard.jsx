@@ -7,12 +7,17 @@ import SettingsEditor from '../components/SettingsEditor';
 import { useInboxNotifications } from '../data/useInboxNotifications';
 import { SiWhatsapp, SiGmail } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSeo } from '../hooks/useSeo';
+import InstagramPublisher from '../components/InstagramPublisher';
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
-  const [tab, setTab] = useState('projects'); // 'projects' | 'inbox' | 'config'
+  const [tab, setTab] = useState('projects'); // 'projects' | 'inbox' | 'config' | 'instagram'
   const [messageToDelete, setMessageToDelete] = useState(null);
   const navigate = useNavigate();
+
+  // Ruta privada → nunca indexar
+  useSeo({ title: 'Dashboard — Alejo Monardez', noindex: true, canonical: null });
 
   // Notifica al admin (Service Worker + sonido) cuando aparecen mensajes nuevos.
   useInboxNotifications(messages);
@@ -96,12 +101,17 @@ export default function Dashboard() {
             <TabButton active={tab === 'inbox'} onClick={() => setTab('inbox')}>
                 Inbox {messages.length > 0 && <span className="ml-2 text-[10px] bg-white text-black rounded-full px-2 py-0.5">{messages.length}</span>}
             </TabButton>
+            <TabButton active={tab === 'instagram'} onClick={() => setTab('instagram')}>
+                Instagram
+            </TabButton>
         </div>
 
         <div className="max-w-6xl mx-auto">
             {tab === 'projects' && <ProjectEditor />}
 
             {tab === 'config' && <SettingsEditor />}
+
+            {tab === 'instagram' && <InstagramPublisher />}
 
             {tab === 'inbox' && (
                 <div className="space-y-4">

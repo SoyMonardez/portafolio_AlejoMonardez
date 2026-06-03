@@ -59,4 +59,16 @@ export const env = Object.freeze({
         contactMax:       num(process.env.CONTACT_RATE_MAX, 3),
         contactWindowMin: num(process.env.CONTACT_RATE_WINDOW_MIN, 60),
     },
+
+    instagram: {
+        accessToken: process.env.INSTAGRAM_ACCESS_TOKEN || '',
+        businessId:  process.env.INSTAGRAM_BUSINESS_ID  || '',
+    },
+
+    groq: {
+        apiKey: process.env.GROQ_API_KEY || '',
+        model:  process.env.GROQ_MODEL   || 'llama-3.3-70b-versatile',
+    },
+
+    sitePublicUrl: process.env.SITE_PUBLIC_URL || 'https://alejomonardez.com',
 });

@@ -49,7 +49,9 @@ CREATE TABLE messages (
     phone VARCHAR(50) DEFAULT '',
     message TEXT NOT NULL,
     is_read TINYINT(1) DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- La bandeja se lista siempre ordenada por fecha desc.
+    KEY idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================
@@ -70,12 +72,16 @@ CREATE TABLE projects (
     description_en TEXT,
     images JSON NOT NULL,
     demo_url VARCHAR(255) DEFAULT '',
+    status VARCHAR(20) DEFAULT 'production',   -- 'production' | 'demo' | 'wip'
+    github_url VARCHAR(255) DEFAULT '',
     tech JSON NOT NULL,
     credentials JSON NULL,
     featured TINYINT(1) DEFAULT 0,
     sort_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    -- El listado público filtra por featured y ordena por sort_order.
+    KEY idx_featured_sort (featured, sort_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Seed de los 4 proyectos destacados.
