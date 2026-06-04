@@ -9,25 +9,35 @@ const router = Router();
 /**
  * POST /instagram/publish  (requiere auth)
  * Body: multipart/form-data
- *   file        — imagen JPEG o PNG (máx. 8 MB)
+ *   files[]     — 1-10 imágenes JPEG/PNG (máx. 8 MB c/u)
  *   description — texto breve; Groq genera el caption completo
  *
- * Responde: { success, caption, permalink }
+ * Responde: { success, caption, permalink, type: 'photo'|'carousel' }
  */
 router.post(
     '/publish',
     requireAuth,
-    igUploader.single('file'),
+    igUploader.array('files', instagramService.maxImages),
     asyncHandler(async (req, res) => {
-        if (!req.file)              throw badRequest('No se recibió ninguna imagen');
+        const files = req.files;
+        if (!files?.length) throw badRequest('No se recibió ninguna imagen');
+
         const desc = req.body?.description?.trim();
-        if (!desc)                  throw badRequest('Falta la descripción del post');
+        if (!desc)  throw badRequest('Falta la descripción del post');
 
-        const imageUrl = instagramService.buildPublicUrl(req.file.filename);
-        const caption  = await instagramService.generateCaption(desc);
-        const permalink = await instagramService.publishPhoto(imageUrl, caption);
+        const filePaths = files.map(f => f.path);
+        const caption   = await instagramService.generateCaption(desc);
 
-        res.json({ success: true, caption, permalink });
+        let permalink, type;
+        if (filePaths.length === 1) {
+            permalink = await instagramService.publishPhoto(filePaths[0], caption);
+            type = 'photo';
+        } else {
+            permalink = await instagramService.publishCarousel(filePaths, caption);
+            type = 'carousel';
+        }
+
+        res.json({ success: true, caption, permalink, type, count: filePaths.length });
     })
 );
 
