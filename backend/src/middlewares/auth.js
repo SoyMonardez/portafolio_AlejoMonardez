@@ -12,7 +12,7 @@ export function requireAuth(req, _res, next) {
     if (!token) return next(unauthorized());
 
     try {
-        req.admin = jwt.verify(token, env.jwt.secret);
+        req.admin = jwt.verify(token, env.jwt.secret, { algorithms: ['HS256'] });
         next();
     } catch {
         next(unauthorized('Token inválido o expirado'));

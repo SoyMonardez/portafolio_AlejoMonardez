@@ -85,6 +85,11 @@ services:
 
       CONTACT_RATE_MAX:        ${CONTACT_RATE_MAX:-3}
       CONTACT_RATE_WINDOW_MIN: ${CONTACT_RATE_WINDOW_MIN:-60}
+
+      # El backend proxea el ai-service (con auth de admin). El token vive solo
+      # acá y en el ai-service, nunca en el bundle del frontend.
+      AI_SERVICE_URL:  http://ai-service:3001
+      AI_SHARED_TOKEN: ${AI_SHARED_TOKEN}
     volumes:
       # Compartido con el frontend para que Nginx pueda servir /uploads/*
       - uploads_data:/var/www/uploads

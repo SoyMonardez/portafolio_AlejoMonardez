@@ -12,6 +12,23 @@ for (const k of required) {
     }
 }
 
+// El JWT_SECRET es lo único que separa a un atacante de firmar sus propios
+// tokens de admin. Si quedó el placeholder del .env.example o es demasiado
+// corto, no levantamos en producción — fail fast antes de exponer el panel.
+{
+    const secret = process.env.JWT_SECRET;
+    const isWeak = secret.length < 32 || /cambiar|change|secret|placeholder|example/i.test(secret);
+    if (isWeak) {
+        const msg = '[env] JWT_SECRET es débil o es el placeholder. Generá uno con: '
+            + 'node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"';
+        if (process.env.NODE_ENV === 'production') {
+            console.error(msg);
+            process.exit(1);
+        }
+        console.warn(msg + ' (permitido solo en desarrollo)');
+    }
+}
+
 const num = (v, def) => {
     const n = Number(v);
     return Number.isFinite(n) ? n : def;
@@ -22,7 +39,12 @@ export const env = Object.freeze({
     nodeEnv:    process.env.NODE_ENV || 'development',
     isProd:     process.env.NODE_ENV === 'production',
 
-    corsOrigins: (process.env.CORS_ORIGINS || '*')
+    // En dev, si no se configuran orígenes, se permite cualquiera (cómodo para
+    // localhost). En producción NO caemos a wildcard: un CORS_ORIGINS vacío deja
+    // la lista vacía (deniega cross-origin). La SPA igual funciona porque habla
+    // con el backend mismo-origen vía el proxy de Nginx (/api), donde CORS no aplica.
+    corsOrigins: (process.env.CORS_ORIGINS
+        || (process.env.NODE_ENV === 'production' ? '' : '*'))
         .split(',')
         .map(s => s.trim())
         .filter(Boolean),
@@ -68,6 +90,13 @@ export const env = Object.freeze({
     groq: {
         apiKey: process.env.GROQ_API_KEY || '',
         model:  process.env.GROQ_MODEL   || 'llama-3.3-70b-versatile',
+    },
+
+    // Microservicio de IA. El backend lo proxea (con auth de admin) para que el
+    // ai-service no quede expuesto público y el token compartido viva solo acá.
+    aiService: {
+        url:   process.env.AI_SERVICE_URL || 'http://localhost:3001',
+        token: process.env.AI_SHARED_TOKEN || '',
     },
 
     sitePublicUrl: process.env.SITE_PUBLIC_URL || 'https://alejomonardez.com',

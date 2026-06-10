@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import crypto from 'node:crypto';
 import { SKILL_KEYS } from './skills-catalog.js';
 
 const app = express();
@@ -17,13 +18,33 @@ if (!GROQ_API_KEY) {
     process.exit(1);
 }
 
-// ---------- Auth opcional (token compartido) ----------
+// Sin token, cualquiera que alcance la URL puede gastar tu API key de Groq.
+// En producción eso es una puerta abierta: abortamos el arranque.
+if (!AI_SHARED_TOKEN) {
+    const msg = '[ai-service] AI_SHARED_TOKEN vacío: el endpoint queda sin autenticación.';
+    if (process.env.NODE_ENV === 'production') {
+        console.error(msg + ' Definí AI_SHARED_TOKEN antes de levantar en producción.');
+        process.exit(1);
+    }
+    console.warn(msg + ' Permitido solo en desarrollo.');
+}
+
+// Comparación en tiempo constante para no filtrar el token vía timing.
+function tokenMatches(got) {
+    if (!got) return false;
+    const candidate = got.startsWith('Bearer ') ? got.slice(7) : got;
+    const a = Buffer.from(candidate);
+    const b = Buffer.from(AI_SHARED_TOKEN);
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+// ---------- Auth (token compartido) ----------
 app.use((req, res, next) => {
     if (req.method === 'OPTIONS') return next();
     if (req.path === '/health') return next();
     if (!AI_SHARED_TOKEN) return next();
     const got = req.headers['authorization'] || req.headers['x-ai-token'];
-    if (got !== AI_SHARED_TOKEN && got !== `Bearer ${AI_SHARED_TOKEN}`) {
+    if (!tokenMatches(got)) {
         return res.status(401).json({ error: 'No autorizado' });
     }
     next();

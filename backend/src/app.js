@@ -15,6 +15,7 @@ import contactRouter   from './routes/contact.js';
 import settingsRouter  from './routes/settings.js';
 import uploadRouter    from './routes/upload.js';
 import instagramRouter from './routes/instagram.js';
+import aiRouter         from './routes/ai.js';
 
 export function buildApp() {
     const app = express();
@@ -65,6 +66,7 @@ export function buildApp() {
     app.use('/settings',  settingsRouter);
     app.use('/upload',    uploadRouter);
     app.use('/instagram', instagramRouter);
+    app.use('/ai',        aiRouter);
 
     // Sirve /uploads/instagram/* en dev (en prod lo hace Nginx directamente)
     const igAbs = path.resolve(process.cwd(), env.upload.dir, '..', 'instagram');

@@ -17,7 +17,12 @@ export const mailService = {
         }
 
         const mailer  = getMailer();
-        const subject = `★ Nuevo mensaje de ${name} — alejomonardez.com`;
+
+        // El name viene del formulario público. Para usarlo dentro de cabeceras
+        // (subject / replyTo display-name) hay que neutralizar CR/LF y comillas,
+        // que de otro modo permitirían inyectar headers (Bcc, etc.).
+        const headerSafeName = String(name).replace(/[\r\n"]/g, ' ').trim();
+        const subject = `★ Nuevo mensaje de ${headerSafeName} — alejomonardez.com`;
 
         const html = renderHtml({ name, email, phone, message });
         const text = renderPlainText({ name, email, phone, message });
@@ -26,7 +31,7 @@ export const mailService = {
             await mailer.sendMail({
                 from:    `"Alejo Monárdez · Portfolio" <${env.smtp.user}>`,
                 to:      env.smtp.notifyTo,
-                replyTo: `"${name}" <${email}>`,           // responder desde Gmail = responde al contacto
+                replyTo: `"${headerSafeName}" <${email}>`,  // responder desde Gmail = responde al contacto
                 subject,
                 html,
                 text,

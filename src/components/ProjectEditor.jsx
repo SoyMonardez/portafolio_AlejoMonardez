@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { API_URL, AI_URL, AI_TOKEN } from '../config';
+import { API_URL } from '../config';
 import { SKILLS, SKILL_CATEGORIES, resolveSkill } from '../data/skills';
 import { PROJECT_CATEGORIES, autoDemoUrl, slugify } from '../data/useProjects';
 
@@ -174,11 +174,11 @@ export default function ProjectEditor() {
     const finalCategory = isCustomCategory ? form.categoryCustom.trim() : form.category;
 
     // ---- IA helpers ----
-    const aiHeaders = () => {
-        const h = { 'Content-Type': 'application/json' };
-        if (AI_TOKEN) h['Authorization'] = AI_TOKEN;
-        return h;
-    };
+    // Las llamadas de IA van al backend (/api/ai/*) con el JWT de admin.
+    // El backend las proxea al ai-service interno; el token de Groq nunca
+    // llega al browser.
+    const AI_PROXY = `${API_URL}/ai`;
+    const aiHeaders = () => ({ 'Content-Type': 'application/json', 'Authorization': token });
 
     // Abre el modal para escribir el contexto del proyecto
     const handleAiAssist = () => {
@@ -231,7 +231,7 @@ export default function ProjectEditor() {
         setAiLoading(true);
         setMsg(null);
         try {
-            const res = await fetch(`${AI_URL}/assist`, {
+            const res = await fetch(`${AI_PROXY}/assist`, {
                 method: 'POST',
                 headers: aiHeaders(),
                 body: JSON.stringify({
@@ -296,7 +296,7 @@ export default function ProjectEditor() {
         }
         setAiLoading(true);
         try {
-            const res = await fetch(`${AI_URL}/suggest-title`, {
+            const res = await fetch(`${AI_PROXY}/suggest-title`, {
                 method: 'POST',
                 headers: aiHeaders(),
                 body: JSON.stringify({

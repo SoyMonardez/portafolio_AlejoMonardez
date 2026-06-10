@@ -32,12 +32,14 @@ CREATE TABLE admins (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Usuarios admin.
---   - 'Moñi'  / Moñi264412@@   (principal)
---   - 'admin' / contraseña antigua de prod (queda como fallback)
--- Para generar un hash nuevo:  php -r "echo password_hash('TU_PASS', PASSWORD_BCRYPT);"
-INSERT INTO admins (id, username, password_hash, created_at) VALUES
-(1, 'admin', '$2y$10$Rc/05pY3eTaDetrVj/k2BeHrQRVxbKNL130FkDFAUD03OxaSUeAW.', CURRENT_TIMESTAMP),
-(2, 'Moñi',  '$2y$10$picbsgFbrLmwnTbRl/HtN.2NGRpKjDzSlYf9M3uATILaTz9xpsSYi', CURRENT_TIMESTAMP);
+-- NO se siembran credenciales en este archivo (quedarían versionadas en git).
+-- Creá el/los admin después del setup con el script CLI, que hashea la
+-- contraseña con bcrypt y nunca la deja en texto plano en el repo:
+--
+--   cd backend && node scripts/create-admin.js <username> <password>
+--
+-- El script usa INSERT ... ON DUPLICATE KEY UPDATE, así que sirve tanto para
+-- crear el primer admin como para rotar la contraseña de uno existente.
 
 -- =====================================================
 -- TABLA: messages (bandeja del formulario de contacto)
