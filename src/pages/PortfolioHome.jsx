@@ -232,6 +232,12 @@ export default function PortfolioHome() {
   return (
     <div className="bg-brand-bg min-h-screen text-brand-text selection:bg-white selection:text-black cursor-none max-w-[1440px] mx-auto">
       <CustomCursor />
+      <style>{`
+        @media (max-width: 767px) {
+          .hero-nav-shell { opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease; }
+          .is-scrolled .hero-nav-shell { opacity: 1; visibility: visible; }
+        }
+      `}</style>
 
       {/* Barra de fondo del nav — aparece con blur al scrollear (controlada por la
           clase .is-scrolled en <html>, ver index.css y SmoothScroll). Va detrás del
@@ -244,7 +250,7 @@ export default function PortfolioHome() {
           Tinta oscura por defecto (sobre la tarjeta clara) → papel claro al
           scrollear (.is-scrolled, sobre el scrim oscuro). Ver .nav-adaptive-* en index.css. */}
       <nav className="fixed top-0 left-0 w-full z-40 flex justify-center">
-        <div className="w-full max-w-[1440px] px-6 md:px-12 py-3.5 md:py-5 flex justify-between items-center">
+        <div className="hero-nav-shell w-full max-w-[1440px] px-6 md:px-12 py-3.5 md:py-5 flex justify-between items-center">
         <img src={logo} alt="Alejo Monardez" className="nav-adaptive-logo h-5 md:h-7 w-auto object-contain opacity-90" />
 
         <div className="flex items-center gap-4 md:gap-8">
@@ -317,41 +323,51 @@ export default function PortfolioHome() {
           mobile usa la tapa de revista de doble exposición (ref: Creative Double
           Exposure Portraits / VOGUE); desktop mantiene la tarjeta de papel + banda
           de tinta original (ref: EL'DORA), sin el tratamiento de tapa. */}
-      <header ref={heroRef} className="relative min-h-[100svh] md:min-h-screen flex flex-col justify-center px-4 sm:px-8 md:px-12 pt-20 md:pt-24 pb-10 md:pb-16">
+      <header ref={heroRef} className="relative min-h-[100svh] md:min-h-screen flex flex-col px-0 md:px-12 pb-10 md:pt-24 md:pb-16">
 
-        {/* ===== Mobile — tapa de revista, doble exposición ===== */}
+        {/* Portada editorial original: una sola composición adaptada a cada ancho. */}
         <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.2, 0.65, 0.3, 0.9] }}
-            className="md:hidden relative w-full flex-1 min-h-[74svh] bg-white text-brand-bg rounded-sm overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.9] }}
+            className="relative w-full min-h-[100svh] md:min-h-[calc(100vh-9rem)] overflow-hidden bg-[#efebe5] text-brand-bg"
         >
-            {/* Fila superior — kicker y rol, como el "FASHION" de la tapa */}
-            <div className="absolute top-0 inset-x-0 z-30 flex justify-between items-center px-5 sm:px-8 md:px-12 pt-5 md:pt-6 font-sans text-[8.5px] md:text-[10px] uppercase tracking-[0.3em] text-brand-bg/60">
-                <span>Alejo — Portfolio</span>
-                <span className="hidden sm:block">{t.hero.role}</span>
-            </div>
+            <span className="absolute top-5 left-4 md:top-7 md:left-8 z-20 font-sans text-[8px] md:text-[10px] uppercase tracking-[0.34em] text-brand-bg/60">
+                Alejo — Portfolio
+            </span>
 
-            {/* Masthead — didone gigante, el retrato lo pisa por delante */}
             <motion.h1
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.2, ease: [0.2, 0.65, 0.3, 0.9] }}
-                className="absolute top-10 md:top-12 inset-x-0 z-0 text-center font-serif font-bold uppercase leading-[0.85] tracking-[-0.01em] text-[18.5vw] md:text-[clamp(5rem,11vw,10.5rem)] select-none"
+                transition={{ duration: 1, delay: 0.15, ease: [0.2, 0.65, 0.3, 0.9] }}
+                className="absolute top-10 md:top-9 inset-x-0 z-0 text-center font-serif font-bold uppercase leading-[0.82] tracking-[-0.035em] text-[15.5vw] md:text-[clamp(6rem,12vw,11.5rem)] select-none whitespace-nowrap"
             >
                 <span className="sr-only">Alejo </span>Monardez
             </motion.h1>
 
-            {/* Retrato — B&N, anclado al borde inferior, delante del masthead.
-                aspect-ratio explícito (1070:1470, el de la foto real) para que el
-                parche de los ojos quede anclado sea cual sea el viewport; si en
-                pantallas muy angostas sobra ancho, overflow-hidden de la tapa lo
-                recorta simétrico (gesto de tapa, nunca scroll horizontal). */}
+            <div className="absolute top-[14.2%] md:top-[19%] left-4 md:left-8 z-20 max-w-[112px] md:max-w-[180px] font-sans uppercase text-brand-bg">
+                <p className="text-[10px] md:text-[12px] font-bold tracking-[0.26em]">Python</p>
+                <span className="mt-2.5 block h-px w-full bg-brand-bg/25" aria-hidden="true" />
+                <p className="mt-2 text-[7px] md:text-[9px] leading-[1.55] tracking-[0.23em] text-brand-bg/55">
+                    {lang === 'es' ? <>Automatización<br />de procesos</> : <>Process<br />automation</>}
+                </p>
+            </div>
+
+            <div className="absolute top-[14.2%] md:top-[19%] right-4 md:right-8 z-20 max-w-[112px] md:max-w-[180px] text-right font-sans uppercase text-brand-bg">
+                <p className="text-[10px] md:text-[12px] font-bold tracking-[0.22em]">
+                    {lang === 'es' ? 'IA aplicada' : 'Applied AI'}
+                </p>
+                <span className="mt-2.5 ml-auto block h-px w-full bg-brand-bg/25" aria-hidden="true" />
+                <p className="mt-2 text-[7px] md:text-[9px] leading-[1.55] tracking-[0.23em] text-brand-bg/55">
+                    {lang === 'es' ? <>Sistemas reales<br />soluciones útiles</> : <>Real systems<br />useful solutions</>}
+                </p>
+            </div>
+
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 1.4, delay: 0.45, ease: 'easeOut' }}
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10 h-[81%] md:h-[86%] pointer-events-none select-none"
+                transition={{ duration: 1.25, delay: 0.32, ease: 'easeOut' }}
+                className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10 h-[79%] md:h-[88%] pointer-events-none select-none"
                 style={{ aspectRatio: '1070 / 1470' }}
             >
                 <picture className="relative block w-full h-full">
@@ -368,152 +384,63 @@ export default function PortfolioHome() {
                     />
                 </picture>
 
-                {/* Parche "doble exposición" — único gesto de color de la tapa.
-                    mix-blend-mode: color tiñe la franja de los ojos preservando el
-                    detalle del B&N (ref: bloque rojo "CATCHY" de la tapa VOGUE). */}
                 <div
                     className="absolute"
                     style={{
                         top: '20%', left: '27%', width: '46%', height: '10%',
-                        backgroundColor: '#9A3324',
+                        backgroundColor: '#a53525',
                         mixBlendMode: 'color',
                     }}
                     aria-hidden="true"
                 />
                 <span
-                    className="absolute left-1/2 -translate-x-1/2 font-sans font-bold text-white text-[8px] md:text-[10px] uppercase tracking-[0.3em]"
-                    style={{ top: '30.5%' }}
+                    className="absolute left-1/2 -translate-x-1/2 font-sans font-bold text-white/70 text-[7px] md:text-[9px] uppercase tracking-[0.32em]"
+                    style={{ top: '29.8%' }}
                     aria-hidden="true"
                 >
-                    Python · IA
+                    AI · DATA
                 </span>
             </motion.div>
 
-            {/* Cover-line izquierda — nº de proyectos (ref: "27 different styles") */}
-            {featuredProjects.length > 0 && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.7 }}
-                    className="absolute left-5 sm:left-8 md:left-12 top-[34%] z-20"
-                >
-                    <span className="font-serif font-bold leading-none text-6xl md:text-8xl">
-                        {String(featuredProjects.length).padStart(2, '0')}
-                    </span>
-                    <p className="mt-2 font-sans text-[9px] md:text-[11px] uppercase tracking-[0.25em] text-brand-bg/75 leading-snug">
-                        {lang === 'es' ? <>proyectos<br />destacados</> : <>featured<br />projects</>}
-                    </p>
-                </motion.div>
-            )}
-
-            {/* Cover-line derecha — año y lugar (ref: "20 / 26 · FEBRUARY") */}
-            <motion.div
+            <motion.a
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-                className="absolute right-5 sm:right-8 md:right-12 top-[27%] z-20 text-right"
+                transition={{ duration: 0.8, delay: 0.95 }}
+                href="#projects"
+                className="cursor-hover absolute bottom-[12.5%] left-1/2 -translate-x-1/2 z-30 flex flex-col items-center font-sans uppercase text-white/60 hover:text-white transition-colors"
             >
-                <span className="block font-serif font-bold leading-[0.9] text-4xl md:text-6xl">20<br />26</span>
-                <p className="mt-2 font-sans text-[9px] md:text-[11px] uppercase tracking-[0.25em] text-brand-bg/75">San Juan, AR</p>
-            </motion.div>
+                <span className="text-[6px] md:text-[8px] tracking-[0.28em]">
+                    {lang === 'es' ? 'Deslizar' : 'Scroll'}
+                </span>
+                <span className="relative mt-2 block h-7 md:h-9 w-px bg-white/60" aria-hidden="true">
+                    <span className="absolute -bottom-px -left-[3px] h-2 w-2 rotate-45 border-b border-r border-white/60" />
+                </span>
+            </motion.a>
 
-            {/* Firma — abajo a la izquierda. mix-blend-difference: blanca sobre el
-                sweater negro, tinta sobre el papel — legible caiga donde caiga. */}
             <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 1 }}
-                className="absolute bottom-6 left-5 sm:left-8 md:bottom-10 md:left-12 z-20 font-script text-2xl md:text-4xl -rotate-2 text-white mix-blend-difference select-none"
+                className="absolute bottom-5 left-4 md:bottom-8 md:left-8 z-30 font-script text-[20px] md:text-4xl -rotate-2 text-white/85 select-none"
                 aria-hidden="true"
             >
                 Alejo Monardez
             </motion.span>
 
-            {/* CTA — cover-line grande (ref: "LOOK FAMOUS"), mismo blend */}
-            <motion.a
+            <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 1.05 }}
-                href="#projects"
-                className="cursor-hover absolute bottom-5 right-5 sm:right-8 md:bottom-8 md:right-12 z-20 text-right font-sans font-light uppercase leading-[0.95] tracking-[0.02em] text-white mix-blend-difference text-[8.5vw] md:text-[3.2vw] hover:opacity-70 transition-opacity"
+                className="absolute bottom-5 right-4 md:bottom-8 md:right-8 z-30 max-w-[245px] md:max-w-[390px] text-right font-sans font-medium uppercase leading-[0.92] tracking-[-0.015em] text-white text-[27px] sm:text-[31px] md:text-[clamp(2rem,3.3vw,3.5rem)]"
             >
-                {lang === 'es' ? <>Ver<br />Proyectos</> : <>View<br />Projects</>}
-            </motion.a>
+                {lang === 'es'
+                    ? <>Desarrollador<br />Python<br />IA aplicada</>
+                    : <>Developer<br />Python<br />Applied AI</>}
+                <span className="sr-only"> — {t.hero.role}</span>
+            </motion.p>
         </motion.div>
 
-        {/* ===== Desktop — tarjeta de papel + banda de tinta (ref: EL'DORA) ===== */}
-        <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.2, 0.65, 0.3, 0.9] }}
-            className="hidden md:block relative w-full bg-white text-brand-bg rounded-sm px-14 pt-10 pb-8"
-        >
-            {/* Fila superior — rol y ubicación en tinta suave */}
-            <div className="flex justify-between gap-1 font-sans text-[10px] uppercase tracking-[0.3em] text-brand-bg/60 mb-7">
-                <span>{t.hero.role}</span>
-                <span>{t.hero.meta_location}</span>
-            </div>
-
-            {/* Wordmark — tinta pura, pesado, borde a borde */}
-            <motion.h2
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1, ease: [0.2, 0.65, 0.3, 0.9] }}
-                className="relative z-10 font-sans font-extrabold uppercase leading-[0.82] tracking-[-0.03em] text-brand-bg text-[9.2vw] max-w-full"
-            >
-                Alejo Monardez
-            </motion.h2>
-
-            {/* Banda de tinta — bio, firma y CTA; el retrato emerge por encima */}
-            <div className="relative mt-8 bg-brand-bg text-white rounded-sm min-h-[330px] flex flex-col justify-between px-10 py-9">
-
-                {/* Retrato — centrado, sobresale de la banda y pisa el nombre.
-                    aspect-ratio explícito (1070:1470, el de la foto real): el ancho del
-                    wrapper se deriva matemáticamente de la altura, sin depender del
-                    shrink-to-fit del navegador. */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.25, ease: 'easeOut' }}
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 h-[142%] pointer-events-none select-none"
-                    style={{ aspectRatio: '1070 / 1470' }}
-                >
-                    <picture className="relative block w-full h-full">
-                        <source srcSet={heroPortraitAvif} type="image/avif" />
-                        <source srcSet={heroPortraitWebp} type="image/webp" />
-                        <img
-                            src={heroPortrait}
-                            alt="Alejo Monardez"
-                            width={1070}
-                            height={1470}
-                            fetchPriority="high"
-                            decoding="async"
-                            className="w-full h-full object-contain object-bottom"
-                        />
-                    </picture>
-                </motion.div>
-
-                {/* Bio corta — arriba a la izquierda */}
-                <p className="relative z-10 max-w-[240px] font-sans text-[12.5px] leading-relaxed text-white/65">
-                    {t.about.desc}
-                </p>
-
-                {/* Fila inferior — firma a la izquierda, CTA a la derecha */}
-                <div className="relative z-30 flex items-end justify-between gap-4 mt-6">
-                    <span className="font-script text-4xl text-white/85 -rotate-2 select-none" aria-hidden="true">
-                        Alejo Monardez
-                    </span>
-                    <a
-                        href="#projects"
-                        className="cursor-hover shrink-0 bg-white text-brand-bg font-sans text-[11px] uppercase tracking-[0.25em] font-bold px-9 py-4 hover:bg-marfil transition-colors duration-300"
-                    >
-                        {lang === 'es' ? 'Ver proyectos' : 'View projects'}
-                    </a>
-                </div>
-            </div>
-        </motion.div>
-
-        {/* Colofón — metadata bajo la tapa, como pie de foto */}
+        {/* Colofón — metadata bajo la portada. */}
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -530,7 +457,7 @@ export default function PortfolioHome() {
             <span className="hidden sm:inline">{t.hero.meta_focus}</span>
         </motion.div>
 
-        {/* Strip de skills — banda editorial bajo la tapa, único y responsive */}
+        {/* Strip de skills — contenido posterior a la portada. */}
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
