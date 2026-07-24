@@ -1,0 +1,40 @@
+# Alejo Monardez — Desarrollador de software
+
+> Desarrollador de software enfocado en Python, automatización e inteligencia artificial aplicada. Estudiante de primer año de la Licenciatura en Ciencia de Datos, con proyectos SaaS, APIs e integraciones que pueden revisarse en demos y repositorios.
+
+## Sobre mí
+
+Desarrollo sistemas SaaS y aplicaciones web con asistencia de herramientas de inteligencia artificial. Puedo analizar una necesidad, estructurar el sistema, diseñar la base de datos, definir funcionalidades, integrar APIs, probar el producto y llevarlo a producción con Docker, Linux y VPS.
+
+Trabajo con Python, FastAPI, PostgreSQL, React, JavaScript, Docker, Git y GitHub. También tengo experiencia integrando LLM, RAG, chatbots, automatizaciones y generación de contenido. Actualmente fortalezco mi capacidad para escribir, depurar y probar código Python de manera autónoma.
+
+## Prácticas profesionales
+
+- **Facultad de Ciencias Exactas — Práctica profesional:** participación en tareas de revisión y mejora de una base de datos académica, con foco en organización de información y resolución de problemas técnicos.
+- **Centro Cívico de San Juan — Práctica profesional:** colaboración en la revisión de un sistema de software del ámbito público, relevamiento de necesidades, documentación de observaciones y propuesta de mejoras.
+
+Estas actividades fueron prácticas de formación y no se presentan como puestos de liderazgo ni experiencia laboral formal.
+
+## Proyectos y trabajos
+
+El portfolio reúne proyectos personales y trabajos freelance. Cada caso muestra el problema abordado, las funcionalidades implementadas, el stack utilizado y, cuando está disponible, una demo o repositorio.
+
+- **MiTurno — Proyecto personal:** SaaS multi-tenant para reservas y gestión de negocios de servicios. FastAPI, React, PostgreSQL, Redis, Docker e integración de WhatsApp con IA.
+- **FinBot WhatsApp — Proyecto personal:** bot familiar para registrar gastos mediante texto o audio, con FastAPI, PostgreSQL, Whisper, Llama y Evolution API.
+- **Fluxa — Proyecto personal:** sistema de gestión de proyectos, trabajadores, asistencias, ingresos, gastos y métricas. React, Node.js, Express, MySQL y Docker.
+- **Etán Construcciones — Trabajo freelance:** sitio y panel de administración para una constructora, con React, Node.js, PostgreSQL, Docker e integración de IA para contenido bilingüe.
+- **CloudMenu — Proyecto personal:** carta digital PWA con panel administrativo, QR, estadísticas y gestión de productos. PHP, MySQL y JavaScript.
+
+## Áreas de trabajo
+
+- Backend, APIs y automatizaciones con Python y FastAPI.
+- Integración de LLM, RAG, chatbots y generación de contenido.
+- Productos SaaS y aplicaciones web con bases de datos relacionales.
+- Pruebas, contenedores Docker y despliegues en Linux/VPS.
+
+## Enlaces
+
+- Portfolio: https://alejomonardez.com/
+- Proyectos: https://alejomonardez.com/proyectos
+- GitHub: https://github.com/SoyMonardez
+- LinkedIn: https://www.linkedin.com/in/alejo-monardez/
