@@ -29,7 +29,7 @@ export default function AdminLogin() {
       } else {
         setError(data.error || 'Login failed');
       }
-    } catch (err) {
+    } catch {
       setError('Connection error');
     }
   };

@@ -36,7 +36,7 @@ export default function SettingsEditor() {
         try {
             const parsed = JSON.parse(value);
             return Array.isArray(parsed) ? parsed : DEFAULT_SKILLS_KEYS;
-        } catch (e) {
+        } catch (_err) {
             return DEFAULT_SKILLS_KEYS;
         }
     }, [draft.skills_list]);
@@ -71,8 +71,8 @@ export default function SettingsEditor() {
             await save(changed);
             setMsg({ type: 'ok', text: 'Configuración guardada' });
             refresh();
-        } catch (err) {
-            setMsg({ type: 'err', text: err.message || 'Error al guardar' });
+        } catch (_err) {
+            setMsg({ type: 'err', text: _err.message || 'Error al guardar' });
         } finally {
             setSaving(false);
             setTimeout(() => setMsg(null), 6000);
@@ -113,8 +113,8 @@ export default function SettingsEditor() {
             await refresh();
             setDraft(prev => ({ ...prev, cv_url: data.url }));
             setCvMsg({ type: 'ok', text: 'CV actualizado correctamente' });
-        } catch (err) {
-            setCvMsg({ type: 'err', text: err.message || 'Error al subir CV' });
+        } catch (_err) {
+            setCvMsg({ type: 'err', text: _err.message || 'Error al subir CV' });
         } finally {
             setCvUploading(false);
             e.target.value = '';

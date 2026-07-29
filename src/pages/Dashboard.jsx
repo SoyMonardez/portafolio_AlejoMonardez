@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import CustomCursor from '../components/CustomCursor';
@@ -6,9 +6,12 @@ import ProjectEditor from '../components/ProjectEditor';
 import SettingsEditor from '../components/SettingsEditor';
 import { useInboxNotifications } from '../data/useInboxNotifications';
 import { SiWhatsapp, SiGmail } from 'react-icons/si';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useSeo } from '../hooks/useSeo';
 import InstagramPublisher from '../components/InstagramPublisher';
+import InstagramInbox from '../components/InstagramInbox';
+import AnalyticsPanel from '../components/AnalyticsPanel';
+import ResumeBuilder from '../components/ResumeBuilder';
 
 export default function Dashboard() {
   const [messages, setMessages] = useState([]);
@@ -22,7 +25,7 @@ export default function Dashboard() {
   // Notifica al admin (Service Worker + sonido) cuando aparecen mensajes nuevos.
   useInboxNotifications(messages);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) return;
 
@@ -42,7 +45,7 @@ export default function Dashboard() {
     } catch (err) {
         console.error(err);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -54,7 +57,7 @@ export default function Dashboard() {
     fetchMessages();
     const interval = setInterval(fetchMessages, 15000);
     return () => clearInterval(interval);
-  }, [navigate]);
+  }, [fetchMessages, navigate]);
 
   const handleDelete = async (id) => {
     setMessageToDelete(id);
@@ -92,11 +95,17 @@ export default function Dashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-12 border-b border-white/10 flex-wrap">
+            <TabButton active={tab === 'analytics'} onClick={() => setTab('analytics')}>
+                Analíticas
+            </TabButton>
             <TabButton active={tab === 'projects'} onClick={() => setTab('projects')}>
                 Proyectos
             </TabButton>
             <TabButton active={tab === 'config'} onClick={() => setTab('config')}>
                 Configuración
+            </TabButton>
+            <TabButton active={tab === 'cv'} onClick={() => setTab('cv')}>
+                Creador de CV
             </TabButton>
             <TabButton active={tab === 'inbox'} onClick={() => setTab('inbox')}>
                 Inbox {messages.length > 0 && <span className="ml-2 text-[10px] bg-white text-black rounded-full px-2 py-0.5">{messages.length}</span>}
@@ -104,14 +113,23 @@ export default function Dashboard() {
             <TabButton active={tab === 'instagram'} onClick={() => setTab('instagram')}>
                 Instagram
             </TabButton>
+            <TabButton active={tab === 'ig-inbox'} onClick={() => setTab('ig-inbox')}>
+                IG Mensajes
+            </TabButton>
         </div>
 
         <div className="max-w-6xl mx-auto">
+            {tab === 'analytics' && <AnalyticsPanel />}
+
             {tab === 'projects' && <ProjectEditor />}
 
             {tab === 'config' && <SettingsEditor />}
 
+            {tab === 'cv' && <ResumeBuilder />}
+
             {tab === 'instagram' && <InstagramPublisher />}
+
+            {tab === 'ig-inbox' && <InstagramInbox />}
 
             {tab === 'inbox' && (
                 <div className="space-y-4">
@@ -127,13 +145,13 @@ export default function Dashboard() {
         {/* Custom Confirmation Modal */}
         <AnimatePresence>
             {messageToDelete && (
-                <motion.div 
+                <Motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md"
                 >
-                    <motion.div 
+                    <Motion.div 
                         initial={{ scale: 0.95, y: 20 }}
                         animate={{ scale: 1, y: 0 }}
                         exit={{ scale: 0.95, y: 20 }}
@@ -161,8 +179,8 @@ export default function Dashboard() {
                                 Eliminar
                             </button>
                         </div>
-                    </motion.div>
-                </motion.div>
+                    </Motion.div>
+                </Motion.div>
             )}
         </AnimatePresence>
     </div>
@@ -276,3 +294,4 @@ function TabButton({ active, children, onClick }) {
         </button>
     );
 }
+

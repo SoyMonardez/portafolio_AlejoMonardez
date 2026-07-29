@@ -16,6 +16,8 @@ import settingsRouter  from './routes/settings.js';
 import uploadRouter    from './routes/upload.js';
 import instagramRouter from './routes/instagram.js';
 import aiRouter         from './routes/ai.js';
+import analyticsRouter  from './routes/analytics.js';
+import cvRouter         from './routes/cv.js';
 
 export function buildApp() {
     const app = express();
@@ -38,7 +40,13 @@ export function buildApp() {
         credentials: false,
     }));
 
-    app.use(express.json({ limit: '1mb' }));
+    // El webhook de Instagram necesita el body crudo para validar la firma HMAC.
+    // Lo excluimos del parser JSON global; su router usa express.raw internamente.
+    const jsonParser = express.json({ limit: '1mb' });
+    app.use((req, res, next) => {
+        if (req.path === '/instagram/webhook') return next();
+        return jsonParser(req, res, next);
+    });
     app.use(express.urlencoded({ extended: true }));
 
     // Sirve archivos subidos. En producción esto lo hace Nginx directo (más rápido),
@@ -67,6 +75,8 @@ export function buildApp() {
     app.use('/upload',    uploadRouter);
     app.use('/instagram', instagramRouter);
     app.use('/ai',        aiRouter);
+    app.use('/analytics', analyticsRouter);
+    app.use('/cv',        cvRouter);
 
     // Sirve /uploads/instagram/* en dev (en prod lo hace Nginx directamente)
     const igAbs = path.resolve(process.cwd(), env.upload.dir, '..', 'instagram');
@@ -77,3 +87,4 @@ export function buildApp() {
 
     return app;
 }
+
