@@ -4,6 +4,8 @@ import crypto from 'node:crypto';
 import multer from 'multer';
 import sharp from 'sharp';
 import { env } from '../config/env.js';
+import { igFetch } from '../utils/igFetch.js';
+import { readVideoMeta } from '../utils/videoMeta.js';
 
 // ─── Límites de aspect ratio de Instagram ─────────────────────
 // Instagram acepta ratios (ancho/alto) entre 4:5 (0.8) y 1.91:1.
@@ -65,14 +67,22 @@ async function normalizeSingle(filePath, bg = 'black') {
 
 // ─── Constantes ───────────────────────────────────────────────
 const ALLOWED_MIME = { 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png' };
-const IG_MAX_BYTES   = 8 * 1024 * 1024;  // 8 MB por imagen (límite Instagram)
-const IG_MAX_IMAGES  = 10;               // máximo de imágenes por carousel
+const ALLOWED_VIDEO_MIME = { 'video/mp4': 'mp4', 'video/quicktime': 'mov' };
+const IG_MAX_BYTES   = 8 * 1024 * 1024;        // 8 MB por imagen (límite Instagram)
+const IG_VIDEO_MAX_BYTES = 300 * 1024 * 1024;  // 300 MB por video (límite Reels API)
+const IG_MAX_IMAGES  = 10;                     // máximo de imágenes por carousel
+
+// Reglas de Reels (Meta): vertical, entre 3s y 15min. Acotamos a 5-90s por UX.
+const REEL_RATIO_TARGET = 9 / 16;   // 0.5625
+const REEL_RATIO_TOL    = 0.06;     // tolerancia (~0.50–0.62) para no rechazar de más
+const REEL_MIN_SEC      = 3;
+const REEL_MAX_SEC      = 90;
 
 // Directorio en el volumen compartido → Nginx lo sirve en /uploads/instagram/
 const igDirAbs = path.resolve(process.cwd(), env.upload.dir, '..', 'instagram');
 await fs.mkdir(igDirAbs, { recursive: true });
 
-// ─── Multer (soporta hasta 10 archivos) ───────────────────────
+// ─── Multer imágenes (carousel/foto, hasta 10) ────────────────
 const igStorage = multer.diskStorage({
     destination: (_req, _file, cb) => cb(null, igDirAbs),
     filename: (_req, file, cb) => {
@@ -93,14 +103,37 @@ export const igUploader = multer({
     },
 });
 
+// ─── Multer video (un solo Reel) ──────────────────────────────
+const igVideoStorage = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, igDirAbs),
+    filename: (_req, file, cb) => {
+        const ext = ALLOWED_VIDEO_MIME[file.mimetype] || 'mp4';
+        const rnd = crypto.randomBytes(8).toString('hex');
+        cb(null, `ig_reel_${Date.now()}_${rnd}.${ext}`);
+    },
+});
+
+export const igVideoUploader = multer({
+    storage: igVideoStorage,
+    limits: { fileSize: IG_VIDEO_MAX_BYTES },
+    fileFilter: (_req, file, cb) => {
+        if (!ALLOWED_VIDEO_MIME[file.mimetype]) {
+            return cb(new Error('Los Reels solo aceptan video .mp4 o .mov'));
+        }
+        cb(null, true);
+    },
+});
+
 // ─── Config ───────────────────────────────────────────────────
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_MODEL   = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 const IG_TOKEN     = process.env.INSTAGRAM_ACCESS_TOKEN;
 const IG_BIZ_ID    = process.env.INSTAGRAM_BUSINESS_ID;
+const IG_APP_SECRET    = process.env.INSTAGRAM_APP_SECRET || '';
+const IG_VERIFY_TOKEN  = process.env.INSTAGRAM_VERIFY_TOKEN || '';
 const SITE_URL     = (process.env.SITE_PUBLIC_URL || 'https://alejomonardez.com').replace(/\/$/, '');
 
-const SOCIAL_PROMPT = `Eres un experto en marketing digital y community management con 10 años de experiencia.
+const SOCIAL_PROMPT = `Redactás contenido profesional para redes sobre desarrollo de software y productos digitales.
 Tu única tarea es redactar captions para Instagram que generen engagement real.
 
 Reglas estrictas:
@@ -115,22 +148,33 @@ Reglas estrictas:
 // ─── Helpers internos ─────────────────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function waitForContainer(containerId) {
-    for (let i = 0; i < 10; i++) {
-        await sleep(3000);
-        const res  = await fetch(
-            `https://graph.instagram.com/v21.0/${containerId}?fields=status_code&access_token=${IG_TOKEN}`
+/**
+ * Espera a que un container esté FINISHED.
+ * Los videos/Reels tardan más que las imágenes (Meta los transcodifica), por eso
+ * el número de intentos y el intervalo son parametrizables.
+ */
+async function waitForContainer(containerId, { maxTries = 10, intervalMs = 3000, isVideo = false } = {}) {
+    for (let i = 0; i < maxTries; i++) {
+        await sleep(intervalMs);
+        const res  = await igFetch(
+            `https://graph.instagram.com/v21.0/${containerId}?fields=status_code,status&access_token=${IG_TOKEN}`
         );
         const data = await res.json();
         if (data.status_code === 'FINISHED') return;
-        if (data.status_code === 'ERROR')
-            throw new Error('Meta rechazó una imagen. Verificá que sea JPEG/PNG < 8 MB.');
+        if (data.status_code === 'ERROR') {
+            const detail = data.status ? ` (${data.status})` : '';
+            throw new Error(isVideo
+                ? `Meta rechazó el video${detail}. Verificá formato .mp4/.mov, 9:16 y duración 3-90s.`
+                : `Meta rechazó una imagen${detail}. Verificá que sea JPEG/PNG < 8 MB.`);
+        }
     }
-    throw new Error('La imagen tardó demasiado en procesarse en Meta.');
+    throw new Error(isVideo
+        ? 'El video tardó demasiado en procesarse en Meta. Probá con un archivo más liviano.'
+        : 'La imagen tardó demasiado en procesarse en Meta.');
 }
 
 async function createItemContainer(imageUrl) {
-    const res = await fetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/media`, {
+    const res = await igFetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/media`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -146,7 +190,7 @@ async function createItemContainer(imageUrl) {
 }
 
 async function publishContainer(containerId) {
-    const res = await fetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/media_publish`, {
+    const res = await igFetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/media_publish`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ creation_id: containerId, access_token: IG_TOKEN }),
@@ -156,7 +200,7 @@ async function publishContainer(containerId) {
 }
 
 async function getPermalink(mediaId) {
-    const res  = await fetch(
+    const res  = await igFetch(
         `https://graph.instagram.com/v21.0/${mediaId}?fields=permalink&access_token=${IG_TOKEN}`
     );
     const data = await res.json();
@@ -170,6 +214,76 @@ export const instagramService = {
 
     buildPublicUrl(filename) {
         return `${SITE_URL}/uploads/instagram/${filename}`;
+    },
+
+    /**
+     * Valida un archivo de video contra las reglas de Reels ANTES de mandarlo
+     * a Meta (evita gastar un round-trip + transcodificación para que lo rechacen).
+     * Devuelve { ok, errors[], meta }. Si no se pudo leer la metadata, deja pasar
+     * y delega la validación final a Meta (degradación elegante).
+     */
+    async validateReel(filePath) {
+        const errors = [];
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext !== '.mp4' && ext !== '.mov') {
+            errors.push('El formato debe ser .mp4 o .mov.');
+        }
+
+        const meta = await readVideoMeta(filePath);
+
+        if (meta.durationSec != null) {
+            if (meta.durationSec < REEL_MIN_SEC)
+                errors.push(`El video dura ${meta.durationSec.toFixed(1)}s; el mínimo es ${REEL_MIN_SEC}s.`);
+            if (meta.durationSec > REEL_MAX_SEC)
+                errors.push(`El video dura ${meta.durationSec.toFixed(0)}s; el máximo es ${REEL_MAX_SEC}s.`);
+        }
+
+        if (meta.ratio != null) {
+            const diff = Math.abs(meta.ratio - REEL_RATIO_TARGET);
+            if (diff > REEL_RATIO_TOL) {
+                errors.push(
+                    `La relación de aspecto es ${meta.width}x${meta.height} (${meta.ratio.toFixed(3)}); ` +
+                    `los Reels necesitan formato vertical 9:16 (~0.562).`
+                );
+            }
+        }
+
+        return { ok: errors.length === 0, errors, meta };
+    },
+
+    /**
+     * Publica un Reel (video vertical 9:16).
+     * Flujo Meta: container (media_type=REELS, video_url) → polling de
+     * upload_status → media_publish. Devuelve el permalink.
+     */
+    async publishReel(filePath, caption, { shareToFeed = true } = {}) {
+        if (!IG_TOKEN || !IG_BIZ_ID)
+            throw new Error('INSTAGRAM_ACCESS_TOKEN o INSTAGRAM_BUSINESS_ID no configurados');
+
+        const videoUrl = this.buildPublicUrl(path.basename(filePath));
+
+        // Paso 1 — crear container del Reel
+        const res = await igFetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                media_type:    'REELS',
+                video_url:     videoUrl,
+                caption,
+                share_to_feed: shareToFeed,
+                access_token:  IG_TOKEN,
+            }),
+        });
+        if (!res.ok) throw new Error(`Meta reel container error: ${await res.text()}`);
+        const { id: containerId } = await res.json();
+
+        // Paso 2 — polling: los Reels se transcodifican async (más lento que imágenes).
+        // Hasta ~2 min (24 intentos × 5s).
+        await waitForContainer(containerId, { maxTries: 24, intervalMs: 5000, isVideo: true });
+
+        // Paso 3 — publicar
+        const mediaId = await publishContainer(containerId);
+        return getPermalink(mediaId);
     },
 
     async generateCaption(description) {
@@ -213,6 +327,63 @@ export const instagramService = {
         await waitForContainer(containerId);
         const mediaId = await publishContainer(containerId);
         return getPermalink(mediaId);
+    },
+
+    // ─── Messaging (chatbot) ──────────────────────────────────
+    verifyToken: IG_VERIFY_TOKEN,
+
+    /**
+     * Verifica la firma X-Hub-Signature-256 de un webhook de Meta.
+     * `rawBody` debe ser el Buffer/string EXACTO del body (sin re-serializar),
+     * por eso el router captura el raw body antes del parser JSON.
+     */
+    verifyWebhookSignature(rawBody, signatureHeader) {
+        if (!IG_APP_SECRET) {
+            console.warn('[ig] INSTAGRAM_APP_SECRET no configurado — no se puede verificar firma');
+            return false;
+        }
+        if (!signatureHeader || !signatureHeader.startsWith('sha256=')) return false;
+        const expected = 'sha256=' + crypto
+            .createHmac('sha256', IG_APP_SECRET)
+            .update(rawBody)
+            .digest('hex');
+        // Comparación en tiempo constante (evita timing attacks)
+        const a = Buffer.from(signatureHeader);
+        const b = Buffer.from(expected);
+        return a.length === b.length && crypto.timingSafeEqual(a, b);
+    },
+
+    /**
+     * Maneja el handshake de verificación del webhook (GET con hub.challenge).
+     * Devuelve el challenge si el verify_token coincide, o null si no.
+     */
+    handleWebhookVerification({ mode, token, challenge }) {
+        if (mode === 'subscribe' && token && token === IG_VERIFY_TOKEN) {
+            return challenge;
+        }
+        return null;
+    },
+
+    /**
+     * Envía un mensaje de texto a un usuario por DM (outbound).
+     * Usa el endpoint de mensajería de la Graph API con el PSID/IGSID del sender.
+     */
+    async sendMessage(recipientId, text) {
+        if (!IG_TOKEN || !IG_BIZ_ID)
+            throw new Error('INSTAGRAM_ACCESS_TOKEN o INSTAGRAM_BUSINESS_ID no configurados');
+        if (!text) return null;
+
+        const res = await igFetch(`https://graph.instagram.com/v21.0/${IG_BIZ_ID}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipient: { id: recipientId },
+                message:   { text },
+                access_token: IG_TOKEN,
+            }),
+        });
+        if (!res.ok) throw new Error(`Meta send message error: ${await res.text()}`);
+        return res.json();
     },
 
     /** Publica un carousel con 2-10 imágenes. */
@@ -261,3 +432,4 @@ export const instagramService = {
         return getPermalink(mediaId);
     },
 };
+

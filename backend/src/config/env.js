@@ -85,6 +85,8 @@ export const env = Object.freeze({
     instagram: {
         accessToken: process.env.INSTAGRAM_ACCESS_TOKEN || '',
         businessId:  process.env.INSTAGRAM_BUSINESS_ID  || '',
+        appSecret:   process.env.INSTAGRAM_APP_SECRET   || '', // verificar firma de webhooks
+        verifyToken: process.env.INSTAGRAM_VERIFY_TOKEN || '', // handshake del webhook
     },
 
     groq: {
