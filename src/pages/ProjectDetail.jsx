@@ -1,0 +1,28 @@
+import React, { useMemo } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import PublicLayout from '../components/PublicLayout';
+import SmartImage from '../components/SmartImage';
+import { localizeProject, useProjects } from '../data/useProjects';
+import { resolveSkill } from '../data/skills';
+import { useLang } from '../data/useLang';
+import { useSeo } from '../hooks/useSeo';
+
+export default function ProjectDetail() {
+    const { slug } = useParams(); const [lang] = useLang(); const es = lang === 'es';
+    const { projects, loading } = useProjects();
+    const raw = useMemo(() => projects.find((item) => item.slug === slug), [projects, slug]);
+    const project = useMemo(() => localizeProject(raw, lang), [raw, lang]);
+    const canonical = `https://alejomonardez.com/proyectos/${encodeURIComponent(slug || '')}`;
+    useSeo({ lang, canonical, noindex: !loading && !project, title: project ? `${project.title} | Proyecto de Alejo Monárdez` : (es ? 'Proyecto no encontrado | Alejo Monárdez' : 'Project not found | Alejo Monárdez'), description: project?.description_short || (es ? 'Detalle de proyecto de software de Alejo Monárdez.' : 'Software project by Alejo Monárdez.'), jsonLd: project ? { '@context': 'https://schema.org', '@type': 'CreativeWork', name: project.title, description: project.description_short || project.description, url: canonical, creator: { '@id': 'https://alejomonardez.com/#person' }, keywords: (project.tech || []).map((key) => resolveSkill(key)?.name || key).join(', ') } : undefined });
+    if (loading) return <PublicLayout><div className="mx-auto min-h-[60vh] max-w-6xl px-5 py-24 text-white/50">{es ? 'Cargando proyecto…' : 'Loading project…'}</div></PublicLayout>;
+    if (!project) return <PublicLayout><div className="mx-auto min-h-[60vh] max-w-4xl px-5 py-24"><p className="text-[10px] uppercase tracking-[0.25em] text-white/40">404</p><h1 className="mt-5 font-serif text-5xl">{es ? 'Proyecto no encontrado' : 'Project not found'}</h1><Link to="/proyectos" className="mt-8 inline-block border-b border-white/50 pb-1 text-sm">{es ? 'Ver proyectos' : 'View projects'}</Link></div></PublicLayout>;
+    const cover = project.images?.[0] || project.image;
+    const labels = es ? { back: 'Todos los proyectos', problem: 'Problema', objective: 'Objetivo', work: 'Mi participación', outcome: 'Estado alcanzado', stack: 'Tecnologías verificadas', demo: 'Ver proyecto', repo: 'Ver repositorio', type: 'Tipo', status: 'Estado' } : { back: 'All projects', problem: 'Problem', objective: 'Objective', work: 'My contribution', outcome: 'Current outcome', stack: 'Verified technologies', demo: 'View project', repo: 'View repository', type: 'Type', status: 'Status' };
+    const status = { production: es ? 'Producción' : 'Production', demo: 'Demo', wip: es ? 'En desarrollo' : 'In development' }[project.status] || (es ? 'Proyecto' : 'Project');
+    return <PublicLayout><article>
+        <header className="mx-auto max-w-6xl px-5 py-14 sm:px-8 md:py-20"><Link to="/proyectos" className="text-[10px] uppercase tracking-[0.22em] text-white/45">← {labels.back}</Link><div className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-end"><div><p className="text-[10px] uppercase tracking-[0.24em] text-white/40">{project.badge || project.category}</p><h1 className="mt-4 font-serif text-[clamp(3.5rem,10vw,8rem)] leading-[0.88] tracking-tight">{project.title}</h1><p className="mt-7 max-w-3xl text-lg leading-8 text-white/65">{project.description}</p></div><dl className="grid grid-cols-2 gap-px bg-white/10 border border-white/10"><div className="bg-brand-bg p-5"><dt className="text-[9px] uppercase tracking-[0.2em] text-white/35">{labels.type}</dt><dd className="mt-2 text-sm">{project.category}</dd></div><div className="bg-brand-bg p-5"><dt className="text-[9px] uppercase tracking-[0.2em] text-white/35">{labels.status}</dt><dd className="mt-2 text-sm">{status}</dd></div></dl></div></header>
+        {cover && <div className="mx-auto max-w-6xl px-5 sm:px-8"><div className="aspect-[16/9] overflow-hidden bg-white/5"><SmartImage src={cover} alt={`${project.title} — ${project.badge || project.category}`} eager /></div></div>}
+        <section className="mx-auto grid max-w-6xl gap-px bg-white/10 border-y border-white/10 md:grid-cols-2">{[[labels.problem, project.situation], [labels.objective, project.task], [labels.work, project.action], [labels.outcome, project.result]].filter(([, value]) => value).map(([label, value]) => <div key={label} className="bg-brand-bg p-6 md:p-10"><h2 className="text-[10px] uppercase tracking-[0.22em] text-white/40">{label}</h2><p className="mt-5 text-base leading-8 text-white/65">{value}</p></div>)}</section>
+        <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 md:py-20"><h2 className="font-serif text-3xl md:text-5xl">{labels.stack}</h2><div className="mt-7 flex flex-wrap gap-2">{(project.tech || []).map((key) => { const skill = resolveSkill(key); return <span key={key} className="rounded-full border border-white/15 px-4 py-2 text-xs text-white/70">{skill?.name || key}</span>; })}</div><div className="mt-10 flex flex-wrap gap-3">{project.demo_url && <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="rounded-full bg-white px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-bg">{labels.demo} ↗</a>}{project.github_url && <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="rounded-full border border-white/25 px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em]">{labels.repo} ↗</a>}</div></section>
+    </article></PublicLayout>;
+}

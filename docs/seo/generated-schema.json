@@ -3,100 +3,34 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "@id": "https://alejomonardez.com/#person",
-    "name": "Alejo Monardez",
-    "alternateName": [
-      "Monardez",
-      "Alejo Monárdez",
-      "SoyMonardez"
-    ],
+    "name": "Alejo Monárdez",
     "url": "https://alejomonardez.com/",
-    "image": "https://alejomonardez.com/og-image.png",
-    "jobTitle": "Software Engineer & AI Specialist",
-    "description": "Software Engineer freelance argentino especializado en Inteligencia Artificial, Ciencia de Datos y desarrollo full-stack. Fundador de plataformas SaaS y consultor técnico para PyMEs y sector público.",
-    "nationality": {
-      "@type": "Country",
-      "name": "Argentina"
-    },
-    "knowsLanguage": [
-      "Spanish",
-      "English"
-    ],
+    "jobTitle": "Desarrollador de software",
+    "description": "Desarrolla productos SaaS, APIs y automatizaciones con Python, FastAPI, PostgreSQL, React, Docker e inteligencia artificial aplicada.",
     "sameAs": [
       "https://github.com/SoyMonardez",
       "https://www.linkedin.com/in/alejo-monardez/",
-      "https://wa.me/2646296764",
-      "https://x.com/alejomonardez"
+      "https://wa.me/2646296764"
     ],
-    "knowsAbout": [
-      "Software Engineering",
-      "Artificial Intelligence",
-      "Machine Learning",
-      "Data Science",
-      "Full Stack Development",
-      "React",
-      "Node.js",
-      "Python",
-      "TypeScript",
-      "MySQL",
-      "PostgreSQL",
-      "Docker",
-      "SaaS Development",
-      "Cloud Architecture",
-      "REST APIs"
-    ],
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "San Juan",
-      "addressRegion": "San Juan",
-      "addressCountry": "AR"
-    },
-    "worksFor": {
-      "@id": "https://alejomonardez.com/#service"
-    }
+    "knowsAbout": ["Python", "FastAPI", "PostgreSQL", "React", "TypeScript", "Docker", "REST APIs", "SaaS", "RAG", "Automatización de procesos"]
   },
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": "https://alejomonardez.com/#website",
     "url": "https://alejomonardez.com/",
-    "name": "Alejo Monardez — Portfolio",
-    "description": "Portafolio de Alejo Monardez, Software Engineer & AI Specialist freelance.",
-    "publisher": {
-      "@id": "https://alejomonardez.com/#person"
-    },
-    "inLanguage": "es-AR"
+    "name": "Alejo Monárdez — Portfolio",
+    "description": "Portfolio de proyectos de backend, productos SaaS, automatización e inteligencia artificial aplicada.",
+    "publisher": { "@id": "https://alejomonardez.com/#person" },
+    "inLanguage": ["es-AR", "en"]
   },
   {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     "@id": "https://alejomonardez.com/#service",
-    "name": "Alejo Monardez — Desarrollo de Software & IA",
-    "image": "https://alejomonardez.com/og-image.png",
-    "url": "https://alejomonardez.com/",
-    "logo": "https://alejomonardez.com/og-image.png",
-    "description": "Servicios profesionales de desarrollo de software full-stack, soluciones de Inteligencia Artificial, arquitectura de datos y consultoría técnica.",
-    "telephone": "+542646296764",
-    "priceRange": "$$",
-    "areaServed": [
-      "AR",
-      "ES",
-      "MX",
-      "US"
-    ],
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "San Juan",
-      "addressCountry": "AR"
-    },
-    "serviceType": [
-      "Desarrollo web full-stack",
-      "Soluciones de Inteligencia Artificial",
-      "Arquitectura de datos",
-      "Desarrollo SaaS",
-      "Consultoría técnica"
-    ],
-    "founder": {
-      "@id": "https://alejomonardez.com/#person"
-    }
+    "name": "Alejo Monárdez — Desarrollo de software",
+    "url": "https://alejomonardez.com/servicios",
+    "description": "Desarrollo de productos SaaS, backend, APIs, automatizaciones e integraciones de inteligencia artificial.",
+    "founder": { "@id": "https://alejomonardez.com/#person" }
   }
 ]

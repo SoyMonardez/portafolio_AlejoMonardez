@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { IoDocumentTextOutline, IoArrowBack } from 'react-icons/io5';
 import CustomCursor from '../components/CustomCursor';
 import SmoothScroll from '../components/SmoothScroll';
@@ -30,10 +30,10 @@ export default function AllProjects() {
         lang,
         canonical: 'https://alejomonardez.com/proyectos',
         title: lang === 'es'
-            ? 'Proyectos de software, Python e IA | Alejo Monardez'
-            : 'Software, Python & AI Projects | Alejo Monardez',
+            ? 'Proyectos de backend, SaaS y automatización | Alejo Monárdez'
+            : 'Backend, SaaS & Automation Projects | Alejo Monárdez',
         description: lang === 'es'
-            ? 'Explorá proyectos personales y trabajos freelance de Alejo Monardez: SaaS, backend con Python, automatizaciones e integraciones de IA con demos y código.'
+            ? 'Proyectos personales y trabajos freelance de Alejo Monárdez: sistemas SaaS, APIs, automatización, datos e inteligencia artificial aplicada.'
             : 'Explore personal projects and freelance work by Alejo Monardez: SaaS, Python backends, automation, and AI integrations with demos and code.',
         keywords: 'proyectos Alejo Monardez, portafolio desarrollador, proyectos SaaS, sistemas de gestión, demos web, react node python',
         jsonLd: [
@@ -60,7 +60,7 @@ export default function AllProjects() {
                         position: i + 1,
                         name: p.title,
                         description: p.description_short || p.description || undefined,
-                        url: p.demo_url || 'https://alejomonardez.com/proyectos',
+                        url: `https://alejomonardez.com/proyectos/${p.slug}`,
                     })),
                 },
             },
@@ -106,7 +106,7 @@ export default function AllProjects() {
         : {
             archive: 'Archive',
             heading: 'all projects',
-            intro: 'The complete collection of platforms, systems and experiences I designed and built end to end. Each entry opens its live demo.',
+            intro: 'Personal products and freelance work presented with their context, core functions, contribution, and verified technology.',
             index: 'Index',
             back: 'Back',
             all: 'All',
@@ -274,13 +274,13 @@ export default function AllProjects() {
                     <p className="font-serif text-2xl md:text-3xl leading-tight mb-3">{t.workCta}</p>
                     <p className="font-sans text-sm text-brand-bg/55 mb-7">{t.workSub}</p>
                     <Link
-                        to="/#contact"
+                        to="/contacto"
                         className="cursor-hover inline-flex items-center gap-2 bg-brand-bg text-white px-7 py-3.5 rounded-full text-[10px] uppercase tracking-[0.25em] font-bold hover:bg-transparent hover:text-brand-bg border border-brand-bg transition-colors duration-300"
                     >
                         {lang === 'es' ? 'Contacto' : 'Contact'}
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </Link>
-                    <p className="mt-9 text-[10px] uppercase tracking-[0.3em] text-brand-bg/30">© 2026 Alejo Monardez</p>
+                    <p className="mt-9 text-[10px] uppercase tracking-[0.3em] text-brand-bg/30">© 2026 Alejo Monárdez</p>
                 </div>
             </section>
         </div>
@@ -323,7 +323,7 @@ function ProjectCard({ project, index, t, lang }) {
     const imageCount = Array.isArray(project.images) ? project.images.length : 0;
 
     const card = (
-        <motion.article
+        <Motion.article
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.1 }}
@@ -446,7 +446,10 @@ function ProjectCard({ project, index, t, lang }) {
                 )}
 
                 {/* Acciones — separadas por hairline, ancladas al fondo de la ficha */}
-                <div className="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-brand-bg/10">
+                <div className="mt-auto pt-4 flex flex-wrap items-center gap-3 border-t border-brand-bg/10">
+                    <Link to={`/proyectos/${project.slug}`} className="inline-flex items-center gap-2 font-sans text-[10px] uppercase tracking-[0.22em] text-brand-bg border-b border-brand-bg/30 pb-1">
+                        {lang === 'es' ? 'Ver caso' : 'View case'} →
+                    </Link>
                     {hasDemo ? (
                         <span className="inline-flex items-center gap-2 font-sans text-[10px] uppercase tracking-[0.25em] text-brand-bg/70 group-hover:text-brand-bg transition-colors">
                             {status === 'production'
@@ -481,20 +484,8 @@ function ProjectCard({ project, index, t, lang }) {
                     )}
                 </div>
             </div>
-        </motion.article>
+        </Motion.article>
     );
 
-    if (hasDemo) {
-        return (
-            <a
-                href={project.demo_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block cursor-hover"
-            >
-                {card}
-            </a>
-        );
-    }
     return card;
 }

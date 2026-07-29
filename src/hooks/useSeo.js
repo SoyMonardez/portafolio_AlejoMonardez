@@ -54,10 +54,11 @@ export function useSeo({
         if (canonical) setMetaProp('og:url', canonical);
         if (image) setMetaProp('og:image', image);
 
-        // --- Twitter ---
-        setMetaProp('twitter:title', title);
-        setMetaProp('twitter:description', description);
-        if (image) setMetaProp('twitter:image', image);
+        // --- Twitter Card (Twitter usa name, no property) ---
+        setMetaName('twitter:card', 'summary_large_image');
+        setMetaName('twitter:title', title);
+        setMetaName('twitter:description', description);
+        if (image) setMetaName('twitter:image', image);
 
         // --- canonical self-referente ---
         if (canonical) setCanonical(canonical);
@@ -73,7 +74,7 @@ export function useSeo({
             // Limpiar SOLO el JSON-LD por ruta al desmontar (los meta los pisa la próxima ruta)
             injected.forEach(el => el && el.remove());
         };
-    }, [title, description, canonical, image, keywords, noindex, lang, JSON.stringify(jsonLd)]);
+    }, [title, description, canonical, image, keywords, noindex, lang, jsonLd]);
 }
 
 // ───────────────────── helpers DOM ─────────────────────

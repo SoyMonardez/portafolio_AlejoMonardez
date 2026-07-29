@@ -1,24 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://alejomonardez.com/</loc>
-    <xhtml:link rel="alternate" hreflang="es-AR" href="https://alejomonardez.com/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://alejomonardez.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://alejomonardez.com/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://alejomonardez.com/"/>
-    <lastmod>2026-05-29</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://alejomonardez.com/proyectos</loc>
-    <xhtml:link rel="alternate" hreflang="es-AR" href="https://alejomonardez.com/proyectos"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://alejomonardez.com/proyectos"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://alejomonardez.com/proyectos"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://alejomonardez.com/proyectos"/>
-    <lastmod>2026-05-29</lastmod>
+    <lastmod>2026-07-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://alejomonardez.com/servicios</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/sobre-mi</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/contacto</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/miturno</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/finbot-whatsapp</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/fluxa</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/etan-construcciones</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/cloudmenu</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/natasha</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://alejomonardez.com/proyectos/portfolio-personal</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
+

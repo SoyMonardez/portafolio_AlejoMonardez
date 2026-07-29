@@ -1,0 +1,12 @@
+{
+  "name": "Alejo Monárdez — Portfolio",
+  "short_name": "Alejo Monárdez",
+  "description": "Backend, productos SaaS y automatización con inteligencia artificial.",
+  "lang": "es-AR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [{ "src": "/favicon.png", "sizes": "96x96", "type": "image/png" }]
+}

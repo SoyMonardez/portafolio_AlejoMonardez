@@ -8,7 +8,7 @@
     "dev:web": "vite",
     "dev:api": "npm --prefix backend run dev",
     "dev:ai": "npm --prefix ai-service run dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -39,3 +39,4 @@
     "vite": "^7.2.4"
   }
 }
+
