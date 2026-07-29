@@ -67,6 +67,14 @@ export const projectService = {
             description_short_en: data.description_short_en ?? '',
             description:          data.description,
             description_en:       data.description_en       ?? '',
+            situation:            data.situation            ?? '',
+            situation_en:         data.situation_en         ?? '',
+            task:                 data.task                 ?? '',
+            task_en:              data.task_en              ?? '',
+            action:               data.action               ?? '',
+            action_en:            data.action_en            ?? '',
+            result:               data.result               ?? '',
+            result_en:            data.result_en            ?? '',
             images:               normalizeImages(data),
             demo_url:             data.demo_url             ?? '',
             status:               data.status               ?? 'production',
@@ -87,7 +95,9 @@ export const projectService = {
         const editable = [
             'slug', 'title', 'title_en', 'category', 'category_en',
             'badge', 'badge_en', 'description_short', 'description_short_en',
-            'description', 'description_en', 'demo_url', 'status', 'github_url'
+            'description', 'description_en', 'demo_url', 'status', 'github_url',
+            'situation', 'situation_en', 'task', 'task_en',
+            'action', 'action_en', 'result', 'result_en',
         ];
 
         const fields = {};

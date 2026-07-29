@@ -7,6 +7,10 @@ const SELECT_FIELDS = `
     badge, badge_en,
     description_short, description_short_en,
     description, description_en,
+    situation, situation_en,
+    task, task_en,
+    action, action_en,
+    result, result_en,
     images, demo_url, status, github_url, tech, credentials, featured, sort_order
 `;
 
@@ -31,6 +35,14 @@ function hydrate(row) {
         description_short_en: row.description_short_en ?? '',
         description:          row.description          ?? '',
         description_en:       row.description_en       ?? '',
+        situation:            row.situation            ?? '',
+        situation_en:         row.situation_en         ?? '',
+        task:                 row.task                 ?? '',
+        task_en:              row.task_en              ?? '',
+        action:               row.action               ?? '',
+        action_en:            row.action_en            ?? '',
+        result:               row.result               ?? '',
+        result_en:            row.result_en            ?? '',
     };
 }
 
@@ -69,13 +81,19 @@ export const projectRepo = {
             `INSERT INTO projects
                 (slug, title, title_en, category, category_en, badge, badge_en,
                  description_short, description_short_en,
-                 description, description_en, images, demo_url, status, github_url, tech, credentials, featured, sort_order)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+                 description, description_en,
+                 situation, situation_en, task, task_en, action, action_en, result, result_en,
+                 images, demo_url, status, github_url, tech, credentials, featured, sort_order)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             [
                 data.slug, data.title, data.title_en, data.category, data.category_en,
                 data.badge, data.badge_en,
                 data.description_short || '', data.description_short_en || '',
                 data.description || '', data.description_en || '',
+                data.situation || '', data.situation_en || '',
+                data.task || '', data.task_en || '',
+                data.action || '', data.action_en || '',
+                data.result || '', data.result_en || '',
                 JSON.stringify(data.images || []),
                 data.demo_url || '',
                 data.status || 'production',

@@ -5,23 +5,21 @@ import { API_URL } from '../config';
  * Categorías predefinidas (usadas en el admin y para filtrar en /proyectos).
  */
 export const PROJECT_CATEGORIES = [
-    'Full Stack Solutions',
-    'IA & Data',
+    'Producto personal',
+    'Trabajo freelance',
+    'Proyecto académico',
+    'Portfolio personal',
     'Otra'
 ];
 
 /**
- * Genera el demo URL automático a partir del slug:
- *   slug -> https://<slug>.alejomonardez.com
+ * Genera el demo URL automático a partir del slug.
  */
 export function autoDemoUrl(slug) {
     if (!slug) return '';
     return `https://${slug}.alejomonardez.com`;
 }
 
-/**
- * Slugify simple en cliente (debe coincidir con la lógica del backend).
- */
 export function slugify(text) {
     if (!text) return '';
     return String(text)
@@ -32,95 +30,97 @@ export function slugify(text) {
 }
 
 /**
- * Fallback estático para el caso de que el backend esté caído.
+ * Contenido editorial verificable usado cuando la API no responde.
+ * No incluye métricas ni enlaces que no estén respaldados en el repositorio.
  */
 export const FALLBACK_PROJECTS = [
     {
-        id: 'fluxa', slug: 'fluxa',
-        title: 'Fluxa', title_en: 'Fluxa',
-        category: 'Full Stack Solutions', category_en: 'Full Stack Solutions',
-        badge: 'Gestión Económica', badge_en: 'Financial Management',
-        description_short: 'Plataforma SaaS para gestión económica de PyMEs con dashboards integrales para ingresos, asistencia y pagos.',
-        description_short_en: 'SaaS platform for SMB financial management with comprehensive dashboards for income, attendance, and payments.',
-        description: 'Plataforma SaaS para gestión económica de PyMEs: control de ingresos, pagos a empleados y proveedores, liquidaciones, planilla de asistencia, almacenamiento de archivos y dashboards visuales.',
-        description_en: 'SaaS platform for SMB financial management: income tracking, employee and supplier payments, settlements, attendance sheets, file storage and visual dashboards.',
-        situation: 'Las PyMEs enfrentaban una severa dispersión de datos financieros, planillas manuales propensas a errores y una alarmante falta de control y transparencia en la liquidación de sueldos.',
-        situation_en: 'SMEs faced a severe fragmentation of financial data, error-prone manual spreadsheets, and a lack of control and transparency in payroll calculations.',
-        task: 'Desarrollar una plataforma centralizada y segura para consolidar ingresos, asistencia, nómina y almacenamiento de documentación digital en tiempo real.',
-        task_en: 'Develop a centralized and secure platform to consolidate income, attendance, payroll, and digital document storage in real time.',
-        action: 'Construí un SaaS de extremo a extremo utilizando React, Node.js y MySQL, implementando dashboards interactivos, almacenamiento seguro de archivos y algoritmos de cálculo automatizado de sueldos.',
-        action_en: 'Built an end-to-end SaaS platform using React, Node.js, and MySQL, implementing interactive dashboards, secure document storage, and automated payroll calculation algorithms.',
-        result: 'Reducción de un 40% en tiempo de gestión administrativa, 100% de precisión matemática en sueldos y carga del panel principal en menos de 1.2 segundos.',
-        result_en: '40% reduction in administrative management time, 100% mathematical accuracy in payroll, and main dashboard loading time under 1.2 seconds.',
-        images: [], demo_url: 'https://fluxa.alejomonardez.com',
-        tech: ['react', 'node', 'tailwind', 'mysql'],
-        featured: true, sort_order: 1
+        id: 'miturno', slug: 'miturno', title: 'MiTurno', title_en: 'MiTurno',
+        category: 'Producto personal', category_en: 'Personal product', badge: 'SaaS de turnos', badge_en: 'Scheduling SaaS',
+        description_short: 'Plataforma SaaS multi-tenant para reservas y gestión de negocios de servicios.',
+        description_short_en: 'Multi-tenant SaaS for bookings and service-business management.',
+        description: 'Centraliza reservas, clientes, servicios y disponibilidad en un mismo sistema, con integraciones de WhatsApp e inteligencia artificial aplicadas a la gestión.',
+        description_en: 'It centralizes bookings, clients, services, and availability in one system, with WhatsApp and applied AI integrations.',
+        situation: 'Los negocios de servicios necesitan coordinar turnos, disponibilidad y datos de clientes sin dispersar la operación en varias herramientas.',
+        situation_en: 'Service businesses need to coordinate bookings, availability, and client data without spreading operations across multiple tools.',
+        task: 'Diseñar un producto SaaS que organice la operación de distintos negocios dentro de una misma plataforma.',
+        task_en: 'Design a SaaS product that organizes multiple businesses within one platform.',
+        action: 'Desarrollé el backend con FastAPI y PostgreSQL, la interfaz con React y la preparación del sistema con Docker.',
+        action_en: 'I built the backend with FastAPI and PostgreSQL, the React interface, and the Docker setup.',
+        result: 'Producto personal con una base técnica preparada para gestionar reservas y operaciones de negocios de servicios.',
+        result_en: 'Personal product with a technical foundation for managing bookings and service-business operations.',
+        images: [], demo_url: '', github_url: '', tech: ['python', 'fastapi', 'postgres', 'react', 'docker'], featured: true, status: 'wip', sort_order: 1
     },
     {
-        id: 'gancho', slug: 'gancho',
-        title: 'Gancho', title_en: 'Gancho',
-        category: 'Full Stack Solutions', category_en: 'Full Stack Solutions',
-        badge: 'Carnicería Inteligente', badge_en: 'Smart Butcher Shop',
-        description_short: 'Sistema de automatización para carnicerías que optimiza costos por gancho, márgenes y ventas con métricas en tiempo real.',
-        description_short_en: 'Automation system for butcher shops that optimizes hook costs, margins, and sales with real-time metrics.',
-        description: 'Sistema de automatización para carnicerías: cálculo automático de precio por kilo, costo por gancho, margen de ganancia descontando merma y grasa, métodos de pago e historial de ventas con gráficos.',
-        description_en: 'Automation system for butcher shops: automatic price-per-kilo calculation, cost per hook, profit margin after waste and fat deduction, payment methods and sales history with charts.',
-        situation: 'Pérdida invisible de márgenes netos en comercios cárnicos debido al cálculo ineficiente de mermas, grasa sobrante y costos fluctuantes por media res.',
-        situation_en: 'Invisible loss of net margins in meat retail due to inefficient calculations of shrinkage, excess fat, and fluctuating wholesale costs.',
-        task: 'Automatizar la fijación de precios al público y el análisis de rentabilidad bruta en tiempo real para optimizar la toma de decisiones comerciales.',
-        task_en: 'Automate public pricing and gross margin analysis in real time to optimize business decision-making.',
-        action: 'Desarrollé algoritmos matemáticos específicos para el desposte en React/Tailwind, permitiendo calcular el costo real por kilo limpio y el margen neto esperado por lote.',
-        action_en: 'Developed specialized yield-calculation algorithms using React/Tailwind, enabling automatic tracking of actual cost per clean kilogram and expected net margin per batch.',
-        result: 'Incremento del 8% en el margen neto de ganancia y erradicación total de errores manuales en el cálculo de rentabilidad diaria.',
-        result_en: '8% increase in net profit margins and complete eradication of manual errors in daily profitability calculation.',
-        images: [], demo_url: 'https://gancho.alejomonardez.com',
-        tech: ['react', 'node', 'tailwind', 'mysql'],
-        featured: true, sort_order: 2
+        id: 'finbot', slug: 'finbot-whatsapp', title: 'FinBot WhatsApp', title_en: 'FinBot WhatsApp',
+        category: 'Producto personal', category_en: 'Personal product', badge: 'Automatización financiera', badge_en: 'Financial automation',
+        description_short: 'Asistente por WhatsApp para registrar y consultar movimientos financieros mediante texto o audio.',
+        description_short_en: 'WhatsApp assistant for recording and querying financial transactions through text or audio.',
+        description: 'Convierte mensajes y audios en movimientos estructurados para facilitar el registro, la categorización y las consultas financieras desde una conversación.',
+        description_en: 'It turns messages and audio into structured transactions for recording, categorizing, and querying finances from a conversation.',
+        situation: 'Registrar gastos e ingresos de forma manual agrega fricción y deja información distribuida fuera del flujo cotidiano.',
+        situation_en: 'Manual income and expense tracking adds friction and leaves information outside the everyday workflow.',
+        task: 'Llevar el registro financiero a WhatsApp sin perder una estructura consultable de datos.',
+        task_en: 'Bring financial tracking into WhatsApp while keeping the data structured and queryable.',
+        action: 'Construí una API con FastAPI y PostgreSQL, integré Evolution API y procesé audios con Whisper para interpretar entradas de texto y voz.',
+        action_en: 'I built an API with FastAPI and PostgreSQL, integrated Evolution API, and processed audio with Whisper to interpret text and voice input.',
+        result: 'Proyecto personal que reúne mensajería, transcripción y persistencia de datos en un único flujo.',
+        result_en: 'Personal project combining messaging, transcription, and data persistence in one flow.',
+        images: [], demo_url: '', github_url: '', tech: ['python', 'fastapi', 'postgres', 'groq'], featured: true, status: 'wip', sort_order: 2
     },
     {
-        id: 'natasha', slug: 'natasha',
-        title: 'Natasha Models', title_en: 'Natasha Models',
-        category: 'Full Stack Solutions', category_en: 'Full Stack Solutions',
-        badge: 'Academia Virtual', badge_en: 'Virtual Academy',
-        description_short: 'Escuela virtual de modelaje con cursos premium, castings interactivos y aplicación móvil optimizada.',
-        description_short_en: 'Virtual modeling school featuring premium courses, interactive castings, and an optimized mobile app.',
-        description: 'Escuela virtual de modelaje con cursos premium y gratuitos, casting, noticias, modelos por categoría, inscripciones a la academia (virtual o presencial), login con Google y app descargable.',
-        description_en: 'Virtual modeling school with premium and free courses, casting, news, models by category, academy enrollment (virtual or in-person), Google login and downloadable app.',
-        situation: 'Una academia de modelaje en crecimiento requería digitalizar su oferta educativa, gestionar castings y automatizar cobros de membresías para escalar a nivel regional.',
-        situation_en: 'A growing modeling academy needed to digitalize its course catalog, manage talent castings, and automate subscription billing to scale regionally.',
-        task: 'Diseñar y construir una plataforma web unificada con pasarela de pagos integrada, streaming de cursos y perfiles de modelos optimizados.',
-        task_en: 'Design and build a unified web platform with integrated payment gateway, course streaming, and optimized model portfolios.',
-        action: 'Creé el sistema de membresías con autenticación de Google, pasarelas de pago automatizadas y un gestor de castings digital para agilizar el reclutamiento.',
-        action_en: 'Created the membership system with Google OAuth, automated payment gateways, and a digital casting manager to streamline recruitment.',
-        result: 'Más de 500 alumnos activos registrados y una reducción del 60% en el tiempo de procesamiento administrativo de matrículas.',
-        result_en: 'Over 500 active registered students and a 60% reduction in manual enrollment administrative processing time.',
-        images: [], demo_url: 'https://natashamodel.agency',
-        tech: ['react', 'node', 'tailwind'],
-        featured: true, sort_order: 3
+        id: 'fluxa', slug: 'fluxa', title: 'Fluxa', title_en: 'Fluxa', category: 'Producto personal', category_en: 'Personal product', badge: 'Gestión operativa', badge_en: 'Operations management',
+        description_short: 'Sistema para gestionar proyectos, trabajadores, asistencias, ingresos, gastos y métricas.',
+        description_short_en: 'System for managing projects, workers, attendance, income, expenses, and metrics.',
+        description: 'Reúne información operativa y financiera en paneles de gestión para evitar planillas separadas y facilitar el seguimiento de la actividad.',
+        description_en: 'It brings operational and financial information into management dashboards, replacing disconnected spreadsheets and simplifying activity tracking.',
+        situation: 'La información de proyectos, personas y movimientos económicos necesitaba una estructura centralizada.', situation_en: 'Project, workforce, and financial information needed a centralized structure.',
+        task: 'Construir un sistema de gestión con datos relacionados, controles operativos y visualizaciones.', task_en: 'Build a management system with related data, operational controls, and visualizations.',
+        action: 'Desarrollé la aplicación con React, Express y MySQL y preparé su ejecución con Docker.', action_en: 'I built the application with React, Express, and MySQL and prepared it to run with Docker.',
+        result: 'Sistema funcional para centralizar la gestión de proyectos y su información asociada.', result_en: 'Working system for centralizing project management and related information.',
+        images: [], demo_url: 'https://fluxa.alejomonardez.com', github_url: '', tech: ['react', 'node', 'express', 'mysql', 'docker'], featured: true, status: 'production', sort_order: 3
     },
     {
-        id: 'epet', slug: 'epet',
-        title: 'E.P.E.T. N°1 Albardón', title_en: 'E.P.E.T. N°1 Albardón',
-        category: 'IA & Data', category_en: 'AI & Data',
-        badge: 'Portal Educativo', badge_en: 'Educational Portal',
-        description_short: 'Portal educativo institucional para escuela técnica con chatbot inteligente integrado para consultas de la comunidad.',
-        description_short_en: 'Institutional educational portal for a technical school with an integrated smart chatbot for community inquiries.',
-        description: 'Portal institucional de la escuela técnica con sus orientaciones (Minería, Construcción e Informática) y un chatbot integrado para responder consultas sobre la institución.',
-        description_en: 'Institutional portal of the technical school with its specializations (Mining, Construction and Computer Science) and an integrated chatbot to answer questions about the institution.',
-        situation: 'Saturación en los canales de atención física y telefónica de la escuela técnica, especialmente fuera de los horarios administrativos.',
-        situation_en: 'Overloaded physical and phone communication channels at the technical school, especially outside administrative working hours.',
-        task: 'Crear un portal institucional centralizado que incluya un chatbot conversacional inteligente capaz de resolver dudas de forma autónoma.',
-        task_en: 'Create a centralized institutional portal including a smart conversational chatbot capable of answering inquiries autonomously.',
-        action: 'Desarrollé el portal web institucional e integré un agente conversacional basado en procesamiento de lenguaje natural (NLP) y base de conocimiento escolar.',
-        action_en: 'Developed the institutional web portal and integrated a conversational agent using Natural Language Processing (NLP) trained on the school knowledge base.',
-        result: 'Reducción de un 75% en consultas telefónicas/presenciales recurrentes con un nivel de precisión del 99% en respuestas automáticas.',
-        result_en: '75% reduction in recurrent physical/phone inquiries with a 99% accuracy rate on automated responses.',
-        images: [], demo_url: 'https://epet.alejomonardez.com',
-        tech: ['php', 'html', 'css', 'tailwind'],
-        featured: true, sort_order: 4
+        id: 'etan', slug: 'etan-construcciones', title: 'Etán Construcciones', title_en: 'Etán Construcciones', category: 'Trabajo freelance', category_en: 'Freelance work', badge: 'Sitio y gestión', badge_en: 'Website and management',
+        description_short: 'Sitio institucional y panel de gestión para una empresa constructora.', description_short_en: 'Institutional website and management panel for a construction company.',
+        description: 'Presenta los servicios y proyectos de la empresa y suma herramientas de administración para organizar el contenido.', description_en: 'It presents the company’s services and projects and adds administration tools for organizing content.',
+        situation: 'La empresa necesitaba reunir su presencia institucional y la gestión de contenidos en una misma solución.', situation_en: 'The company needed to combine its institutional presence and content management in one solution.',
+        task: 'Desarrollar una aplicación web con sitio público y panel de gestión.', task_en: 'Build a web application with a public website and management panel.',
+        action: 'Participé en el desarrollo con React, Node.js, PostgreSQL y Docker, incorporando funciones de inteligencia artificial aplicadas al producto.', action_en: 'I worked on the product with React, Node.js, PostgreSQL, and Docker, including applied AI features.',
+        result: 'Trabajo freelance llevado a una versión funcional con administración de contenido.', result_en: 'Freelance project delivered as a working product with content administration.',
+        images: [], demo_url: '', github_url: '', tech: ['react', 'node', 'postgres', 'docker'], featured: true, status: 'production', sort_order: 4
+    },
+    {
+        id: 'cloudmenu', slug: 'cloudmenu', title: 'CloudMenu', title_en: 'CloudMenu', category: 'Producto personal', category_en: 'Personal product', badge: 'Carta digital', badge_en: 'Digital menu',
+        description_short: 'Carta digital PWA con panel administrativo, códigos QR, estadísticas y gestión de productos.', description_short_en: 'Digital-menu PWA with an admin panel, QR codes, analytics, and product management.',
+        description: 'Permite mantener una carta gastronómica actualizada y administrar productos, disponibilidad y contenido desde un panel.', description_en: 'It keeps a restaurant menu up to date and manages products, availability, and content from an admin panel.',
+        situation: 'Los cambios de precios, productos y disponibilidad requieren una carta que pueda actualizarse sin reimprimir material.', situation_en: 'Price, product, and availability changes require a menu that can be updated without reprinting.',
+        task: 'Construir una carta digital administrable y accesible mediante QR.', task_en: 'Build an admin-managed digital menu accessible through QR codes.',
+        action: 'Desarrollé la PWA y su panel con PHP, MySQL, JavaScript y Docker.', action_en: 'I built the PWA and its admin panel with PHP, MySQL, JavaScript, and Docker.',
+        result: 'Producto funcional para publicar y mantener cartas digitales desde una interfaz de gestión.', result_en: 'Working product for publishing and maintaining digital menus from a management interface.',
+        images: [], demo_url: 'https://cloudmenu.alejomonardez.com', github_url: '', tech: ['php', 'javascript', 'mysql', 'docker'], featured: false, status: 'production', sort_order: 5
+    },
+    {
+        id: 'natasha', slug: 'natasha', title: 'Natasha Models', title_en: 'Natasha Models', category: 'Trabajo freelance', category_en: 'Freelance work', badge: 'Plataforma educativa', badge_en: 'Education platform',
+        description_short: 'Plataforma para una academia de modelaje con cursos, modelos, inscripciones y noticias.', description_short_en: 'Platform for a modeling academy with courses, model profiles, enrollment, and news.',
+        description: 'Organiza la propuesta educativa y la información institucional en una experiencia web con gestión de contenidos.', description_en: 'It organizes educational offerings and institutional information in a web experience with content management.',
+        situation: 'La academia necesitaba presentar cursos, inscripciones, noticias y perfiles en un mismo canal digital.', situation_en: 'The academy needed one digital channel for courses, enrollment, news, and profiles.',
+        task: 'Construir una plataforma web que reuniera esos contenidos y procesos.', task_en: 'Build a web platform that brought those contents and processes together.',
+        action: 'Desarrollé la aplicación con React, Node.js, Express y PostgreSQL.', action_en: 'I built the application with React, Node.js, Express, and PostgreSQL.',
+        result: 'Trabajo freelance publicado con secciones de contenido y procesos de inscripción.', result_en: 'Published freelance project with content sections and enrollment flows.',
+        images: [], demo_url: 'https://natashamodel.agency', github_url: '', tech: ['react', 'node', 'express', 'postgres'], featured: false, status: 'production', sort_order: 6
+    },
+    {
+        id: 'portfolio', slug: 'portfolio-personal', title: 'Portfolio personal', title_en: 'Personal portfolio', category: 'Portfolio personal', category_en: 'Personal portfolio', badge: 'CMS e i18n', badge_en: 'CMS and i18n',
+        description_short: 'Portfolio full-stack con CMS, panel administrativo, contenido bilingüe e integración de IA.', description_short_en: 'Full-stack portfolio with a CMS, admin dashboard, bilingual content, and AI integration.',
+        description: 'Este sitio combina una interfaz pública con administración de proyectos, ajustes, mensajes y publicación de contenido.', description_en: 'This site combines a public interface with project, settings, message, and content-publishing administration.',
+        situation: 'El portfolio necesitaba contenido editable, rutas públicas y una administración separada de la experiencia de visita.', situation_en: 'The portfolio needed editable content, public routes, and administration separated from the visitor experience.',
+        task: 'Construir y desplegar un portfolio que también funcionara como producto administrable.', task_en: 'Build and deploy a portfolio that also works as an admin-managed product.',
+        action: 'Desarrollé el frontend con React, la API con Express, la persistencia con MySQL y el despliegue con Docker y Nginx.', action_en: 'I built the React frontend, Express API, MySQL persistence, and Docker/Nginx deployment.',
+        result: 'Sitio en producción con CMS, formulario de contacto, contenido bilingüe y panel administrativo.', result_en: 'Production site with a CMS, contact form, bilingual content, and admin dashboard.',
+        images: [], demo_url: 'https://alejomonardez.com', github_url: '', tech: ['react', 'node', 'express', 'mysql', 'docker', 'nginx'], featured: false, status: 'production', sort_order: 7
     }
 ];
-
 /**
  * Devuelve el proyecto con los campos textuales en el idioma pedido.
  * Si el campo _en está vacío, cae al ES. Si pedís ES, devuelve tal cual.
@@ -157,15 +157,33 @@ export function localizeProject(project, lang = 'es') {
 /**
  * Normaliza un proyecto que pudo haber venido con `image` (string) en vez de `images` (array).
  */
+const PROJECT_PRIORITY = ['miturno', 'finbot-whatsapp', 'fluxa', 'etan-construcciones', 'cloudmenu', 'natasha', 'portfolio-personal'];
+const UNSUPPORTED_METRIC = /(?:\d+(?:[.,]\d+)?\s*%|\d+\s*(?:usuarios|alumnos|clientes)|precisión|accuracy|reduction|reducción|incremento)/i;
+
 function normalizeProject(p) {
     if (!p) return p;
-    if (!Array.isArray(p.images)) {
-        if (typeof p.image === 'string' && p.image) {
-            return { ...p, images: [p.image] };
-        }
-        return { ...p, images: [] };
-    }
-    return p;
+    let images = Array.isArray(p.images) ? p.images : [];
+    if (!images.length && typeof p.image === 'string' && p.image) images = [p.image];
+    return {
+        ...p,
+        images,
+        result: UNSUPPORTED_METRIC.test(p.result || '') ? '' : (p.result || ''),
+        result_en: UNSUPPORTED_METRIC.test(p.result_en || '') ? '' : (p.result_en || ''),
+    };
+}
+
+function prepareProjects(apiProjects, featuredOnly) {
+    const normalized = apiProjects.map(normalizeProject);
+    const knownSlugs = new Set(normalized.map((p) => p.slug));
+    const merged = [...normalized, ...FALLBACK_PROJECTS.filter((p) => !knownSlugs.has(p.slug))];
+    const ordered = merged.sort((a, b) => {
+        const ai = PROJECT_PRIORITY.indexOf(a.slug);
+        const bi = PROJECT_PRIORITY.indexOf(b.slug);
+        const ar = ai === -1 ? 1000 + Number(a.sort_order || 0) : ai;
+        const br = bi === -1 ? 1000 + Number(b.sort_order || 0) : bi;
+        return ar - br;
+    });
+    return featuredOnly ? ordered.filter((p) => p.featured || PROJECT_PRIORITY.indexOf(p.slug) < 4) : ordered;
 }
 
 /**
@@ -186,7 +204,7 @@ export function useProjects({ featuredOnly = false } = {}) {
             .then(data => {
                 if (cancelled) return;
                 if (Array.isArray(data) && data.length > 0) {
-                    setProjects(data.map(normalizeProject));
+                    setProjects(prepareProjects(data, featuredOnly));
                 }
                 setLoading(false);
             })
@@ -201,3 +219,4 @@ export function useProjects({ featuredOnly = false } = {}) {
 
     return { projects, loading, error };
 }
+

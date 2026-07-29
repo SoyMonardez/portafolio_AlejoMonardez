@@ -12,12 +12,20 @@ const EMPTY = {
     badge: '',
     description_short: '',
     description: '',
+    situation: '',
+    task: '',
+    action: '',
+    result: '',
     // EN (traducción opcional)
     title_en: '',
     category_en: '',
     badge_en: '',
     description_short_en: '',
     description_en: '',
+    situation_en: '',
+    task_en: '',
+    action_en: '',
+    result_en: '',
     // Comunes
     images: [],
     demo_url: '',
@@ -69,8 +77,8 @@ export default function ProjectEditor() {
             const res = await fetch(`${API_URL}/projects`);
             const data = await res.json();
             if (Array.isArray(data)) setProjects(data);
-        } catch (err) {
-            console.error('Error fetching projects', err);
+        } catch (_err) {
+            console.error('Error fetching projects', _err);
         }
     };
 
@@ -115,7 +123,7 @@ export default function ProjectEditor() {
                 setForm(prev => ({ ...prev, images: [...prev.images, ...uploaded] }));
                 setMsg({ type: 'ok', text: `${uploaded.length} imagen(es) subida(s)` });
             }
-        } catch (err) {
+        } catch (_err) {
             setMsg({ type: 'err', text: 'Error de red al subir' });
         } finally {
             setUploading(false);
@@ -215,7 +223,7 @@ export default function ProjectEditor() {
         try {
             const content = await file.text();
             setAiFile({ name: file.name, content });
-        } catch {
+        } catch (_err) {
             setAiFileError('No se pudo leer el archivo.');
         }
     };
@@ -245,6 +253,14 @@ export default function ProjectEditor() {
                     badge_en: form.badge_en,
                     description_short_en: form.description_short_en,
                     description_en: form.description_en,
+                    situation: form.situation,
+                    task: form.task,
+                    action: form.action,
+                    result: form.result,
+                    situation_en: form.situation_en,
+                    task_en: form.task_en,
+                    action_en: form.action_en,
+                    result_en: form.result_en,
                     prompt: aiPrompt,
                     file_name:    aiFile?.name    || '',
                     file_content: aiFile?.content || '',
@@ -271,6 +287,14 @@ export default function ProjectEditor() {
                 description_short_en: data.description_short_en || prev.description_short_en,
                 description:          data.description          || prev.description,
                 description_en:       data.description_en       || prev.description_en,
+                situation:            data.situation            || prev.situation,
+                situation_en:         data.situation_en         || prev.situation_en,
+                task:                 data.task                 || prev.task,
+                task_en:              data.task_en              || prev.task_en,
+                action:               data.action               || prev.action,
+                action_en:            data.action_en            || prev.action_en,
+                result:               data.result               || prev.result,
+                result_en:            data.result_en            || prev.result_en,
                 sort_order:           typeof data.sort_order === 'number' ? data.sort_order : prev.sort_order,
             }));
             setAiResult({
@@ -279,8 +303,8 @@ export default function ProjectEditor() {
                 notes:             data.notes             || '',
             });
             setMsg({ type: 'ok', text: 'Textos optimizados (ES + EN) y sugerencias generadas' });
-        } catch (err) {
-            setMsg({ type: 'err', text: `Error de red: ${err.message}. ¿Está corriendo el ai-service?` });
+        } catch (_err) {
+            setMsg({ type: 'err', text: `Error de red: ${_err.message}. ¿Está corriendo el ai-service?` });
         } finally {
             setAiLoading(false);
             setTimeout(() => setMsg(null), 8000);
@@ -311,8 +335,8 @@ export default function ProjectEditor() {
                 return;
             }
             setAiResult(prev => ({ ...(prev || {}), title_suggestions: data.suggestions || [] }));
-        } catch (err) {
-            setMsg({ type: 'err', text: `Error de red: ${err.message}` });
+        } catch (_err) {
+            setMsg({ type: 'err', text: `Error de red: ${_err.message}` });
         } finally {
             setAiLoading(false);
             setTimeout(() => setMsg(null), 5000);
@@ -355,12 +379,20 @@ export default function ProjectEditor() {
                 badge: form.badge,
                 description_short: form.description_short || '',
                 description: form.description,
+                situation: form.situation || '',
+                task: form.task || '',
+                action: form.action || '',
+                result: form.result || '',
                 // EN
                 title_en: form.title_en || '',
                 category_en: form.category_en || '',
                 badge_en: form.badge_en || '',
                 description_short_en: form.description_short_en || '',
                 description_en: form.description_en || '',
+                situation_en: form.situation_en || '',
+                task_en: form.task_en || '',
+                action_en: form.action_en || '',
+                result_en: form.result_en || '',
                 // Comunes
                 images: form.images,
                 demo_url: form.demo_url,
@@ -380,7 +412,7 @@ export default function ProjectEditor() {
             });
             const text = await res.text();
             let data = {};
-            try { data = JSON.parse(text); } catch { /* respuesta no-JSON */ }
+            try { data = JSON.parse(text); } catch (_err) { /* respuesta no-JSON */ }
             if (res.ok && data.success) {
                 setMsg({ type: 'ok', text: isEditing ? 'Proyecto actualizado' : 'Proyecto creado' });
                 setForm(EMPTY);
@@ -391,9 +423,9 @@ export default function ProjectEditor() {
                 setMsg({ type: 'err', text: full || `HTTP ${res.status}` });
                 console.error('[Project save] response:', { status: res.status, body: text });
             }
-        } catch (err) {
-            setMsg({ type: 'err', text: `Error de red: ${err.message}` });
-            console.error('[Project save] network error:', err);
+        } catch (_err) {
+            setMsg({ type: 'err', text: `Error de red: ${_err.message}` });
+            console.error('[Project save] network error:', _err);
         } finally {
             setSaving(false);
             setTimeout(() => setMsg(null), 10000);
@@ -413,12 +445,20 @@ export default function ProjectEditor() {
             badge: p.badge || '',
             description_short: p.description_short || '',
             description: p.description || '',
+            situation: p.situation || '',
+            task: p.task || '',
+            action: p.action || '',
+            result: p.result || '',
             // EN
             title_en:             p.title_en             || '',
             category_en:          p.category_en          || '',
             badge_en:             p.badge_en             || '',
             description_short_en: p.description_short_en || '',
             description_en:       p.description_en       || '',
+            situation_en:         p.situation_en         || '',
+            task_en:              p.task_en              || '',
+            action_en:            p.action_en            || '',
+            result_en:            p.result_en            || '',
             // Comunes
             images,
             demo_url: p.demo_url || '',
@@ -437,13 +477,29 @@ export default function ProjectEditor() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar este proyecto?')) return;
         try {
-            await fetch(`${API_URL}/projects/${id}`, {
+            const res = await fetch(`${API_URL}/projects/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': token }
             });
+            // Sesión vencida: avisar y mandar al login (antes fallaba en silencio).
+            if (res.status === 401) {
+                localStorage.removeItem('admin_token');
+                setMsg({ type: 'err', text: 'Tu sesión expiró. Redirigiendo al login…' });
+                setTimeout(() => { window.location.href = '/admin'; }, 1500);
+                return;
+            }
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                setMsg({ type: 'err', text: data.error || 'No se pudo eliminar el proyecto.' });
+                return;
+            }
             fetchProjects();
             if (form.id === id) setForm(EMPTY);
-        } catch (err) { console.error(err); }
+            setMsg({ type: 'ok', text: 'Proyecto eliminado.' });
+        } catch (_err) {
+            console.error(_err);
+            setMsg({ type: 'err', text: 'Error de red al eliminar el proyecto.' });
+        }
     };
 
     const handleNew = () => {
@@ -778,6 +834,54 @@ export default function ProjectEditor() {
                             />
                         </Field>
                     )}
+
+                    {/* SITUACIÓN / TAREA / ACCIÓN / RESULTADO — caso de estudio, bilingüe.
+                        Opcional: si se completa, el modal de detalle en la home lo muestra
+                        en vez de la descripción simple. */}
+                    <div className="mt-8 pt-6 border-t border-white/10">
+                        <p className="text-xs uppercase tracking-widest text-white/40 mb-4">
+                            Caso de estudio (opcional — si lo completás, reemplaza la descripción simple en el modal de la home)
+                        </p>
+                        {formLang === 'es' ? (
+                            <div className="space-y-4">
+                                <Field label="Situación (ES)">
+                                    <textarea rows={2} value={form.situation} onChange={e => handleChange('situation', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder="¿Qué problema enfrentaba el cliente?" />
+                                </Field>
+                                <Field label="Tarea (ES)">
+                                    <textarea rows={2} value={form.task} onChange={e => handleChange('task', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder="¿Qué había que lograr?" />
+                                </Field>
+                                <Field label="Acción (ES)">
+                                    <textarea rows={2} value={form.action} onChange={e => handleChange('action', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder="¿Qué construiste/hiciste?" />
+                                </Field>
+                                <Field label="Resultado (ES)">
+                                    <textarea rows={2} value={form.result} onChange={e => handleChange('result', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder="¿Qué impacto tuvo?" />
+                                </Field>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <Field label="Situation (EN)">
+                                    <textarea rows={2} value={form.situation_en} onChange={e => handleChange('situation_en', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder={form.situation || 'What problem did the client face?'} />
+                                </Field>
+                                <Field label="Task (EN)">
+                                    <textarea rows={2} value={form.task_en} onChange={e => handleChange('task_en', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder={form.task || 'What needed to happen?'} />
+                                </Field>
+                                <Field label="Action (EN)">
+                                    <textarea rows={2} value={form.action_en} onChange={e => handleChange('action_en', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder={form.action || 'What did you build/do?'} />
+                                </Field>
+                                <Field label="Result (EN)">
+                                    <textarea rows={2} value={form.result_en} onChange={e => handleChange('result_en', e.target.value)}
+                                        className={`${inputCls} resize-none`} placeholder={form.result || 'What was the impact?'} />
+                                </Field>
+                            </div>
+                        )}
+                    </div>
                 </Section>
 
                 {/* Bloque 2: URL del demo + estado + GitHub */}

@@ -104,6 +104,14 @@ app.post('/assist', async (req, res) => {
             badge_en = '',
             description_short_en = '',
             description_en = '',
+            situation = '',
+            task = '',
+            action = '',
+            result: currentResult = '',
+            situation_en = '',
+            task_en = '',
+            action_en = '',
+            result_en = '',
             prompt = '',
             file_name = '',
             file_content = '',
@@ -121,7 +129,7 @@ app.post('/assist', async (req, res) => {
             ? file_content.slice(0, 12000) + '\n\n[... archivo truncado, mostrando primeros 12 KB ...]'
             : file_content;
 
-        const system = `Sos un copywriter senior y arquitecto de software de IA. Trabajás en un portfolio editorial (estética minimalista de lujo, tipo revista).
+        const system = `Sos un redactor técnico con experiencia en productos de software e IA aplicada. Trabajás en un portfolio editorial (estética minimalista de lujo, tipo revista).
 
 Tu tarea: tomar info parcial de un proyecto, junto con el contexto/indicaciones adicionales provistas por el usuario, y devolver una versión pulida, bilingüe, lista para publicar con dos niveles de descripción.
 
@@ -143,6 +151,13 @@ REGLAS:
       3. Automatizaciones / inteligencia del sistema (notificaciones, recordatorios, lógica de retención, IA si aplica).
       4. Cierre con beneficio comercial concreto (reducción de no-shows, fidelización, eficiencia operativa, etc.).
   * REGLA DE ORO: si el usuario mencionó X features específicas en su prompt, todas tienen que aparecer mencionadas en la descripción. No las fusiones, no las omitas.
+
+- Caso de estudio ('situation', 'task', 'action', 'result' + sus '_en'), 1-3 oraciones cada uno, TODOS OPCIONALES pero intentá completarlos siempre que haya info suficiente (descripción, prompt o archivo):
+  * 'situation': el problema o contexto que enfrentaba el cliente/usuario ANTES del proyecto. Qué le faltaba, qué le costaba, qué proceso manual/ineficiente tenía.
+  * 'task': el objetivo concreto a lograr — qué había que construir o resolver.
+  * 'action': qué construiste/implementaste vos específicamente (decisiones técnicas, features clave, arquitectura). Primera persona ("Construí...", "Implementé...").
+  * 'result': el impacto o beneficio logrado. REGLA IMPORTANTE: si el prompt/descripción menciona una métrica concreta (%, tiempo, cantidad), usala tal cual. Si NO hay ninguna métrica mencionada, describí el resultado en términos CUALITATIVOS (ej: "Eliminó el proceso manual y centralizó la información en un solo panel") — NUNCA inventes un porcentaje o número que no te dieron.
+  * Si la info provista es demasiado escasa para inferir alguno de los 4 con honestidad, dejalo como string vacío "" en vez de rellenar con genérico vacío de contenido.
 
 - sort_order: Sugerir un número entero (ej. del 1 al 10) representando la jerarquía de prioridad del proyecto (proyectos más complejos/relevantes van con orden menor).
 - title_suggestions: SIEMPRE devolver 3 títulos alternativos creativos y memorables.
@@ -168,6 +183,14 @@ Formato EXACTO de respuesta (JSON, sin markdown, sin \`\`\`):
   "description_short_en": "string",
   "description": "string",
   "description_en": "string",
+  "situation": "string",
+  "situation_en": "string",
+  "task": "string",
+  "task_en": "string",
+  "action": "string",
+  "action_en": "string",
+  "result": "string",
+  "result_en": "string",
   "sort_order": number,
   "title_suggestions": ["string", "string", "string"],
   "suggested_tech": ["key1", "key2"],
@@ -185,12 +208,20 @@ ESPAÑOL:
 - Badge: ${badge || '(vacío)'}
 - Descripción corta actual: ${description_short || '(vacía)'}
 - Descripción extendida actual: ${description || '(vacía)'}
+- Situación actual: ${situation || '(vacía)'}
+- Tarea actual: ${task || '(vacía)'}
+- Acción actual: ${action || '(vacía)'}
+- Resultado actual: ${currentResult || '(vacía)'}
 
 INGLÉS (si vacío, generar nuevo):
 - Title: ${title_en || '(vacío)'}
 - Badge: ${badge_en || '(vacío)'}
 - Description Short: ${description_short_en || '(vacía)'}
 - Description: ${description_en || '(vacía)'}
+- Situation: ${situation_en || '(vacía)'}
+- Task: ${task_en || '(vacía)'}
+- Action: ${action_en || '(vacía)'}
+- Result: ${result_en || '(vacía)'}
 
 Tecnologías ya seleccionadas por el usuario: ${tech.length ? JSON.stringify(tech) : '(ninguna)'}
 
@@ -230,6 +261,14 @@ Generá la versión optimizada completa.`;
             description_short_en: result.description_short_en || '',
             description:          result.description          || '',
             description_en:       result.description_en       || '',
+            situation:            result.situation            || '',
+            situation_en:         result.situation_en         || '',
+            task:                 result.task                 || '',
+            task_en:              result.task_en              || '',
+            action:               result.action               || '',
+            action_en:            result.action_en            || '',
+            result:               result.result               || '',
+            result_en:            result.result_en            || '',
             sort_order:           typeof result.sort_order === 'number' ? result.sort_order : 0,
             title_suggestions:    suggestions,
             suggested_tech:       suggested,
@@ -313,6 +352,25 @@ Devolvé JSON: { "tech": ["key1", "key2", ...] }. Máximo 10 keys. Solo las más
     }
 });
 
+
+// Redacción asistida para el creador de CV. Conserva los hechos aportados: no inventa experiencia, métricas ni proyectos.
+app.post('/resume-assist', async (req, res) => {
+    try {
+        const draft = req.body?.draft;
+        if (!draft || typeof draft !== 'object') return res.status(400).json({ error: 'Necesito un borrador de CV para mejorar' });
+        const result = await callGroq([
+            { role: 'system', content: `Sos un editor de CVs ATS/Harvard. Devolvé SOLO JSON válido: {"draft": object, "notes": string}. Conservá nombres, contactos, empleadores, cargos, fechas, proyectos, enlaces y tecnologías exactamente como están. No inventes métricas, logros, certificaciones ni experiencia. Solo mejorá summary, descriptions y bullets para claridad y ATS. Conservá estructura e ids; si no hay evidencia, dejá el valor igual o vacío.` },
+            { role: 'user', content: JSON.stringify({ draft }) },
+        ], { temperature: 0.2, maxTokens: 2600 });
+        const improved = result?.draft && typeof result.draft === 'object' ? result.draft : draft;
+        res.json({ success: true, draft: improved, notes: typeof result?.notes === 'string' ? result.notes.slice(0, 500) : 'Redacción optimizada. Revisá los cambios antes de publicar.' });
+    } catch (err) {
+        console.error('[/resume-assist]', err);
+        res.status(500).json({ error: err.message || 'No se pudo mejorar el CV con IA' });
+    }
+});
 app.listen(PORT, () => {
     console.log(`[ai-service] escuchando en http://localhost:${PORT}  (modelo: ${GROQ_MODEL})`);
 });
+
+

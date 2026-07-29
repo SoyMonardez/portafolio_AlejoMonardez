@@ -17,7 +17,7 @@ const router = Router();
 const AI_BASE = env.aiService.url.replace(/\/$/, '');
 
 // Solo proxeamos endpoints conocidos del ai-service.
-const ALLOWED = new Set(['assist', 'suggest-title', 'suggest-tech']);
+const ALLOWED = new Set(['assist', 'suggest-title', 'suggest-tech', 'resume-assist']);
 
 async function forward(endpoint, body) {
     const headers = { 'Content-Type': 'application/json' };
@@ -51,3 +51,4 @@ router.post('/:endpoint', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 export default router;
+
