@@ -1,9 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss3,
-  SiNodedotjs, SiExpress, SiPhp, SiPython, SiMysql,
-  SiDocker, SiGit, SiGithub, SiWhatsapp, SiGmail
-} from "react-icons/si";
+import React, { useRef, useState } from 'react';
 import { HiMenuAlt4 } from "react-icons/hi";
 import { IoClose, IoDocumentTextOutline } from "react-icons/io5";
 import { Link } from 'react-router-dom';
@@ -16,7 +11,7 @@ import SmartImage from '../components/SmartImage';
 import { FeaturedRowSkeleton } from '../components/Skeletons';
 import { useSettings } from '../data/useSettings';
 import { resolveSocialHref } from '../data/socialLinks';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import '../App.css';
 import { API_URL } from '../config';
 import logo from '../assets/logo.png';
@@ -34,24 +29,43 @@ const heroPortrait = '/me/moni_cutout.png';
 
 // Dynamic skills loaded from DB settings
 
+const STACK_GROUPS = {
+  es: [
+    { label: 'Backend y APIs', keys: ['python', 'fastapi'] },
+    { label: 'Datos', keys: ['postgres', 'mysql'] },
+    { label: 'Frontend', keys: ['react', 'typescript', 'tailwind'] },
+    { label: 'IA aplicada', items: ['LLM', 'RAG', 'Embeddings', 'Whisper'] },
+    { label: 'Infraestructura', keys: ['docker', 'git', 'github', 'nginx'], items: ['Linux', 'VPS'] },
+    { label: 'Experiencia complementaria', keys: ['javascript', 'node', 'express', 'php'] },
+  ],
+  en: [
+    { label: 'Backend & APIs', keys: ['python', 'fastapi'] },
+    { label: 'Data', keys: ['postgres', 'mysql'] },
+    { label: 'Frontend', keys: ['react', 'typescript', 'tailwind'] },
+    { label: 'Applied AI', items: ['LLM', 'RAG', 'Embeddings', 'Whisper'] },
+    { label: 'Infrastructure', keys: ['docker', 'git', 'github', 'nginx'], items: ['Linux', 'VPS'] },
+    { label: 'Additional experience', keys: ['javascript', 'node', 'express', 'php'] },
+  ],
+};
+
 const translations = {
   es: {
     nav: { about: "Sobre Mí", projects: "Proyectos", services: "Servicios", contact: "Contacto" },
     hero: {
-      role: "Desarrollador de software | Python, automatización e IA aplicada",
-      tagline: "Sistemas claros. Automatización útil. Productos en producción.",
-      impact_summary: "Desarrollo sistemas SaaS y aplicaciones web con asistencia de herramientas de inteligencia artificial. Analizo la necesidad, estructuro el sistema, diseño la base de datos, defino funcionalidades, integro APIs, pruebo el producto y lo despliego en Docker y VPS.",
+      role: "Desarrollador de software",
+      tagline: "Backend, productos SaaS y automatización con inteligencia artificial",
+      impact_summary: "Construyo sistemas SaaS, APIs y automatizaciones con Python, FastAPI, PostgreSQL, React y Docker, integrando inteligencia artificial cuando aporta una mejora concreta al producto.",
       meta_location: "San Juan, Argentina",
       meta_availability: "Disponible para proyectos remotos",
-      meta_focus: "Python · IA · SaaS",
+      meta_focus: "Backend · SaaS · Automatización",
     },
     about: {
       title: "Sobre Mí",
-      p1: "Software aplicado.",
-      p2: "Automatización útil.",
-      p3: "Productos demostrables.",
+      p1: "Productos completos.",
+      p2: "Backend sólido.",
+      p3: "IA con una función concreta.",
       desc: "Desarrollo software con Python, automatización e IA aplicada, desde el análisis y la base de datos hasta las pruebas y el despliegue.",
-      bio_intro: "Soy estudiante de primer año de la Licenciatura en Ciencia de Datos y desarrollo sistemas SaaS y aplicaciones web. Trabajo con Python, FastAPI, PostgreSQL, React, JavaScript, Docker, Git, Linux y VPS; también integro LLM, RAG, chatbots, automatizaciones y generación de contenido. Actualmente fortalezco mi capacidad para escribir, depurar y probar código Python de manera autónoma.",
+      bio_intro: "Soy Alejo Monárdez. Desarrollo aplicaciones, sistemas SaaS y automatizaciones: defino funcionalidades, modelo datos, integro servicios, construyo APIs e interfaces y preparo los proyectos para producción. Trabajo principalmente con Python, FastAPI, PostgreSQL, React y Docker. Estudio la Licenciatura en Ciencia de Datos en la Universidad Siglo 21.",
       exp_intro: "Prácticas profesionales realizadas durante mi formación:",
       exp_1: "Facultad de Ciencias Exactas: participación en tareas de revisión y mejora de una base de datos académica.",
       exp_2: "Centro Cívico de San Juan: colaboración en la revisión de un sistema de software del ámbito público.",
@@ -68,7 +82,7 @@ const translations = {
           },
           {
               company: "Centro Cívico de San Juan — Práctica profesional",
-              description: "Colaboré en la revisión de un sistema de software del ámbito público, relevando necesidades, documentando observaciones y proponiendo mejoras."
+              description: "Colaboré en la revisión de un sistema de software del ámbito público, relevando necesidades y documentando observaciones."
           }
       ],
       current_title: "03. PROYECTOS PERSONALES Y TRABAJOS FREELANCE"
@@ -93,20 +107,20 @@ const translations = {
   en: {
     nav: { about: "About", projects: "Projects", services: "Services", contact: "Contact" },
     hero: {
-      role: "Software Developer | Python, Automation & Applied AI",
-      tagline: "Clear systems. Useful automation. Production-ready products.",
-      impact_summary: "I build SaaS systems and web applications with the assistance of artificial intelligence tools. I analyze needs, structure the system, design the database, define features, integrate APIs, test the product, and deploy it with Docker and VPS infrastructure.",
+      role: "Software developer",
+      tagline: "Backend, SaaS products and applied AI automation",
+      impact_summary: "I build SaaS systems, APIs, and automation with Python, FastAPI, PostgreSQL, React, and Docker, integrating AI when it provides a concrete product improvement.",
       meta_location: "San Juan, Argentina",
       meta_availability: "Available for remote projects",
-      meta_focus: "Python · AI · SaaS",
+      meta_focus: "Backend · SaaS · Automation",
     },
     about: {
       title: "About Me",
-      p1: "Applied software.",
-      p2: "Useful automation.",
-      p3: "Demonstrable products.",
+      p1: "Complete products.",
+      p2: "Solid backend.",
+      p3: "AI with a clear purpose.",
       desc: "I build software with Python, automation, and applied AI, from analysis and database design through testing and deployment.",
-      bio_intro: "I am a first-year Data Science undergraduate student and I build SaaS systems and web applications. I work with Python, FastAPI, PostgreSQL, React, JavaScript, Docker, Git, Linux, and VPS infrastructure; I also integrate LLMs, RAG, chatbots, automation, and content generation. I am currently strengthening my ability to write, debug, and test Python code independently.",
+      bio_intro: "I’m Alejo Monárdez. I build applications, SaaS systems, and automation: I define features, model data, integrate services, build APIs and interfaces, and prepare products for production. I mainly work with Python, FastAPI, PostgreSQL, React, and Docker. I study Data Science at Universidad Siglo 21.",
       exp_intro: "Professional placements completed as part of my education:",
       exp_1: "Faculty of Exact Sciences: participation in reviewing and improving an academic database.",
       exp_2: "San Juan Civic Center: collaboration in reviewing a public-sector software system.",
@@ -123,7 +137,7 @@ const translations = {
           },
           {
               company: "San Juan Civic Center — Professional placement",
-              description: "I collaborated in reviewing a public-sector software system, gathering needs, documenting observations, and proposing improvements."
+              description: "I collaborated in reviewing a public-sector software system, gathering needs and documenting observations."
           }
       ],
       current_title: "03. PERSONAL PROJECTS AND FREELANCE WORK"
@@ -161,28 +175,21 @@ export default function PortfolioHome() {
     lang,
     canonical: 'https://alejomonardez.com/',
     title: lang === 'es'
-      ? 'Desarrollador Python e IA aplicada | Alejo Monardez'
-      : 'Python & Applied AI Developer | Alejo Monardez',
+      ? 'Alejo Monárdez | Backend, SaaS y automatización con IA'
+      : 'Alejo Monárdez | Backend, SaaS & Applied AI Automation',
     description: lang === 'es'
-      ? 'Portfolio de Alejo Monardez: sistemas SaaS, backend con Python, automatizaciones, integraciones de IA, APIs y despliegues en Docker y VPS.'
-      : 'Alejo Monardez portfolio: SaaS systems, Python backends, automation, AI integrations, APIs, and deployments with Docker and VPS infrastructure.',
+      ? 'Desarrollo sistemas SaaS, APIs y automatizaciones con Python, FastAPI, PostgreSQL, React y Docker, integrando inteligencia artificial en productos digitales.'
+      : 'I build SaaS systems, APIs, and automation with Python, FastAPI, PostgreSQL, React, and Docker, integrating AI into digital products.',
     keywords: 'desarrollador Python, backend FastAPI, automatización con IA, integración LLM, desarrollo SaaS, PostgreSQL, Docker, VPS',
   });
 
-  const resolvedSkills = React.useMemo(() => {
-    let keys = ['html', 'css', 'javascript', 'react', 'tailwind', 'node', 'express', 'php', 'python', 'mysql', 'docker', 'git', 'github'];
-    if (settings && settings.skills_list) {
-      try {
-        const parsed = JSON.parse(settings.skills_list);
-        if (Array.isArray(parsed)) {
-          keys = parsed;
-        }
-      } catch (e) {
-        console.warn('Failed to parse skills_list setting:', e);
-      }
-    }
-    return keys.map(key => resolveSkill(key)).filter(Boolean);
-  }, [settings]);
+  const skillGroups = React.useMemo(() => STACK_GROUPS[lang].map((group) => ({
+    ...group,
+    skills: [
+      ...(group.keys || []).map((key) => resolveSkill(key)).filter(Boolean),
+      ...(group.items || []).map((name) => ({ key: name, name })),
+    ],
+  })), [lang]);
 
   // Proyectos destacados desde el backend (con fallback estático)
   const { projects: featuredProjects, loading: featuredLoading } = useProjects({ featuredOnly: true });
@@ -192,10 +199,6 @@ export default function PortfolioHome() {
   const [formStatus, setFormStatus] = useState('idle'); // idle, sending, success, error
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleInputChange = (e) => {
-      const { name, value } = e.target;
-      setFormData(prev => ({ ...prev, [name]: value }));
-  };
 
   const handleContactSubmit = async (e) => {
       e.preventDefault();
@@ -223,7 +226,7 @@ export default function PortfolioHome() {
                   setErrorMessage(data.error || (lang === 'es' ? 'Error al enviar el mensaje' : 'Error sending message'));
               }
           }
-      } catch (error) {
+      } catch {
           setFormStatus('error');
           setErrorMessage(lang === 'es' ? 'Error de red. Intentá de nuevo.' : 'Network error. Try again.');
       }
@@ -232,13 +235,6 @@ export default function PortfolioHome() {
   return (
     <div className="bg-brand-bg min-h-screen text-brand-text selection:bg-white selection:text-black cursor-none max-w-[1440px] mx-auto">
       <CustomCursor />
-      <style>{`
-        @media (max-width: 767px) {
-          .hero-nav-shell { opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility .35s ease; }
-          .is-scrolled .hero-nav-shell { opacity: 1; visibility: visible; }
-        }
-      `}</style>
-
       {/* Barra de fondo del nav — aparece con blur al scrollear (controlada por la
           clase .is-scrolled en <html>, ver index.css y SmoothScroll). Va detrás del
           nav (z-30 vs z-40) para no romper el mix-blend-difference del texto. */}
@@ -255,10 +251,10 @@ export default function PortfolioHome() {
 
         <div className="flex items-center gap-4 md:gap-8">
             <div className="nav-adaptive-text hidden md:flex gap-8 text-sm font-sans tracking-widest uppercase">
-            <a href="#about" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.about}</a>
+            <Link to="/sobre-mi" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.about}</Link>
             <a href="#projects" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.projects}</a>
             <Link to="/servicios" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.services}</Link>
-            <a href="#contact" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.contact}</a>
+            <Link to="/contacto" className="hover:opacity-50 transition-opacity cursor-hover">{t.nav.contact}</Link>
             </div>
 
             {/* CV Download CTA — pill en desktop, icono circular en mobile */}
@@ -300,18 +296,18 @@ export default function PortfolioHome() {
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {menuOpen && (
-            <motion.div
+            <Motion.div
                 initial={{ opacity: 0, y: "-100%" }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: "-100%" }}
                 transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
                 className="fixed inset-0 bg-black z-30 flex flex-col justify-center items-center gap-8 text-3xl font-serif text-white/90"
             >
-                <a href="#about" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.about}</a>
+                <Link to="/sobre-mi" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.about}</Link>
                 <a href="#projects" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.projects}</a>
                 <Link to="/servicios" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.services}</Link>
-                <a href="#contact" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.contact}</a>
-            </motion.div>
+                <Link to="/contacto" onClick={() => setMenuOpen(false)} className="hover:opacity-50 transition-opacity">{t.nav.contact}</Link>
+            </Motion.div>
         )}
       </AnimatePresence>
 
@@ -326,24 +322,18 @@ export default function PortfolioHome() {
       <header ref={heroRef} className="relative min-h-[100svh] md:min-h-screen flex flex-col px-0 md:px-12 pb-10 md:pt-24 md:pb-16">
 
         {/* Portada editorial original: una sola composición adaptada a cada ancho. */}
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.9, ease: [0.2, 0.65, 0.3, 0.9] }}
-            className="relative w-full min-h-[100svh] md:min-h-[calc(100vh-9rem)] overflow-hidden bg-[#efebe5] text-brand-bg"
+        <div
+            className="relative w-full min-h-[100svh] overflow-hidden bg-[#efebe5] text-brand-bg md:hidden"
         >
-            <span className="absolute top-5 left-4 md:top-7 md:left-8 z-20 font-sans text-[8px] md:text-[10px] uppercase tracking-[0.34em] text-brand-bg/60">
+            <span className="absolute top-5 left-4 z-20 hidden font-sans text-[8px] uppercase tracking-[0.34em] text-brand-bg/60 md:block md:top-7 md:left-8 md:text-[10px]">
                 Alejo — Portfolio
             </span>
 
-            <motion.h1
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.15, ease: [0.2, 0.65, 0.3, 0.9] }}
-                className="absolute top-10 md:top-9 inset-x-0 z-0 text-center font-serif font-bold uppercase leading-[0.82] tracking-[-0.035em] text-[15.5vw] md:text-[clamp(6rem,12vw,11.5rem)] select-none whitespace-nowrap"
+            <div
+                className="hero-masthead absolute top-10 md:top-9 inset-x-0 z-0 text-center font-serif font-bold uppercase leading-[0.82] tracking-[-0.035em] text-[15.5vw] md:text-[clamp(6rem,12vw,11.5rem)] select-none whitespace-nowrap"
             >
                 <span className="sr-only">Alejo </span>Monardez
-            </motion.h1>
+            </div>
 
             <div className="absolute top-[14.2%] md:top-[19%] left-4 md:left-8 z-20 max-w-[112px] md:max-w-[180px] font-sans uppercase text-brand-bg">
                 <p className="text-[10px] md:text-[12px] font-bold tracking-[0.26em]">Python</p>
@@ -363,10 +353,7 @@ export default function PortfolioHome() {
                 </p>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.25, delay: 0.32, ease: 'easeOut' }}
+            <div
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 z-10 h-[79%] md:h-[88%] pointer-events-none select-none"
                 style={{ aspectRatio: '1070 / 1470' }}
             >
@@ -400,14 +387,11 @@ export default function PortfolioHome() {
                 >
                     AI · DATA
                 </span>
-            </motion.div>
+            </div>
 
-            <motion.a
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.95 }}
+            <a
                 href="#projects"
-                className="cursor-hover absolute bottom-[12.5%] left-1/2 -translate-x-1/2 z-30 flex flex-col items-center font-sans uppercase text-white/60 hover:text-white transition-colors"
+                className="hero-scroll-cue cursor-hover absolute bottom-[12.5%] left-1/2 -translate-x-1/2 z-30 flex flex-col items-center font-sans uppercase text-white/60 hover:text-white transition-colors"
             >
                 <span className="text-[6px] md:text-[8px] tracking-[0.28em]">
                     {lang === 'es' ? 'Deslizar' : 'Scroll'}
@@ -415,36 +399,88 @@ export default function PortfolioHome() {
                 <span className="relative mt-2 block h-7 md:h-9 w-px bg-white/60" aria-hidden="true">
                     <span className="absolute -bottom-px -left-[3px] h-2 w-2 rotate-45 border-b border-r border-white/60" />
                 </span>
-            </motion.a>
+            </a>
 
-            <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1 }}
-                className="absolute bottom-5 left-4 md:bottom-8 md:left-8 z-30 font-script text-[20px] md:text-4xl -rotate-2 text-white/85 select-none"
+            <span
+                className="absolute bottom-5 left-4 z-30 -rotate-2 font-script text-[20px] text-white/85 select-none md:bottom-8 md:left-8 md:text-4xl"
                 aria-hidden="true"
             >
                 Alejo Monardez
-            </motion.span>
+            </span>
 
-            <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 1.05 }}
+            <p
                 className="absolute bottom-5 right-4 md:bottom-8 md:right-8 z-30 max-w-[245px] md:max-w-[390px] text-right font-sans font-medium uppercase leading-[0.92] tracking-[-0.015em] text-white text-[27px] sm:text-[31px] md:text-[clamp(2rem,3.3vw,3.5rem)]"
             >
                 {lang === 'es'
-                    ? <>Desarrollador<br />Python<br />IA aplicada</>
-                    : <>Developer<br />Python<br />Applied AI</>}
+                    ? <>Desarrollador<br />de software</>
+                    : <>Software<br />developer</>}
                 <span className="sr-only"> — {t.hero.role}</span>
-            </motion.p>
-        </motion.div>
+            </p>
+        </div>
+
+        {/* Escritorio — composición editorial restaurada de e3bbd1a. */}
+        <div className="hidden md:block relative w-full bg-white text-brand-bg rounded-sm px-14 pt-10 pb-8">
+            <div className="flex justify-between gap-1 font-sans text-[10px] uppercase tracking-[0.3em] text-brand-bg/60 mb-7">
+                <span>{t.hero.role}</span>
+                <span>{t.hero.meta_location}</span>
+            </div>
+
+            <h2 className="relative z-10 max-w-full font-sans font-extrabold uppercase leading-[0.82] tracking-[-0.03em] text-brand-bg text-[9.2vw]">
+                Alejo Monardez
+            </h2>
+
+            <div className="relative mt-8 min-h-[330px] rounded-sm bg-brand-bg px-10 py-9 text-white flex flex-col justify-between">
+                <div
+                    className="desktop-hero-portrait absolute bottom-0 left-1/2 z-20 h-[142%] -translate-x-1/2 pointer-events-none select-none"
+                    style={{ aspectRatio: '1070 / 1470' }}
+                >
+                    <picture className="relative block w-full h-full">
+                        <source srcSet={heroPortraitAvif} type="image/avif" />
+                        <source srcSet={heroPortraitWebp} type="image/webp" />
+                        <img
+                            src={heroPortrait}
+                            alt="Alejo Monardez"
+                            width={1070}
+                            height={1470}
+                            fetchPriority="high"
+                            decoding="async"
+                            className="w-full h-full object-contain object-bottom"
+                        />
+                    </picture>
+                </div>
+
+                <p className="relative z-10 max-w-[240px] font-sans text-[12.5px] leading-relaxed text-white/65">
+                    {t.about.desc}
+                </p>
+
+                <div className="relative z-30 mt-6 flex items-end justify-between gap-4">
+                    <span className="-rotate-2 select-none font-script text-4xl text-white/85" aria-hidden="true">
+                        Alejo Monardez
+                    </span>
+                    <a
+                        href="#projects"
+                        className="cursor-hover shrink-0 bg-white px-9 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.25em] text-brand-bg transition-colors duration-300 hover:bg-marfil"
+                    >
+                        {lang === 'es' ? 'Ver proyectos' : 'View projects'}
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div className="mx-auto mt-8 md:mt-12 w-full max-w-5xl px-5 sm:px-8 text-center">
+            <p className="font-sans text-[10px] uppercase tracking-[0.28em] text-white/45">{t.hero.role}</p>
+            <h1 className="mt-4 font-serif text-[clamp(2.35rem,7vw,5.75rem)] leading-[0.96] tracking-tight text-white">
+                {lang === 'es' ? 'Desarrollo software para convertir procesos e ideas en productos funcionales.' : 'I build software that turns processes and ideas into working products.'}
+            </h1>
+            <p className="mx-auto mt-5 max-w-3xl font-sans text-sm md:text-lg leading-relaxed text-white/65">{t.hero.impact_summary}</p>
+            <p className="mt-4 font-sans text-[10px] md:text-xs uppercase tracking-[0.22em] text-white/45">{t.hero.tagline}</p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <a href="#projects" className="inline-flex min-h-11 items-center rounded-full bg-white px-6 py-3 text-[10px] font-bold uppercase tracking-[0.22em] text-brand-bg transition-colors hover:bg-marfil focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">{lang === 'es' ? 'Ver proyectos' : 'View projects'}</a>
+                <Link to="/contacto" className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-6 py-3 text-[10px] font-bold uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-brand-bg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">{lang === 'es' ? 'Contactarme' : 'Contact me'}</Link>
+            </div>
+        </div>
 
         {/* Colofón — metadata bajo la portada. */}
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.9 }}
+        <div
             className="mt-5 flex flex-wrap justify-center items-center gap-x-6 gap-y-1 font-sans text-[9px] md:text-[10px] uppercase tracking-[0.3em] text-white/50"
         >
             <span>{t.hero.meta_location}</span>
@@ -455,26 +491,29 @@ export default function PortfolioHome() {
             </span>
             <span className="text-white/25 hidden sm:inline" aria-hidden="true">—</span>
             <span className="hidden sm:inline">{t.hero.meta_focus}</span>
-        </motion.div>
+        </div>
 
-        {/* Strip de skills — contenido posterior a la portada. */}
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 1.1 }}
-            className="mt-8 md:mt-10 border-y border-white/10 py-5 md:py-6 flex flex-wrap justify-center gap-x-5 gap-y-4 md:gap-x-9"
-        >
-            {resolvedSkills.map((skill, index) => (
-                <div key={index} className="flex flex-col items-center gap-1 group cursor-default">
-                    <span className="text-[19px] md:text-2xl text-white/40 group-hover:text-white transition-colors duration-300">
-                        {skill.icon}
-                    </span>
-                    <span className="text-[7.5px] md:text-[10px] uppercase tracking-widest text-white/40 group-hover:text-white transition-colors duration-300 whitespace-nowrap">
-                        {skill.name}
-                    </span>
-                </div>
-            ))}
-        </motion.div>
+        {/* Stack agrupado por función y nivel de uso. */}
+        <section aria-labelledby="stack-title" className="mt-8 md:mt-10 border-y border-white/10 py-7 md:py-9">
+            <div className="mb-6 flex items-end justify-between gap-4">
+                <h2 id="stack-title" className="font-serif text-2xl md:text-3xl text-white">{lang === 'es' ? 'Stack de trabajo' : 'Working stack'}</h2>
+                <span className="hidden sm:block text-[9px] uppercase tracking-[0.25em] text-white/35">{lang === 'es' ? 'Ordenado por función' : 'Grouped by role'}</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 border border-white/10">
+                {skillGroups.map((group) => (
+                    <article key={group.label} className="bg-brand-bg p-5 md:p-6">
+                        <h3 className="text-[10px] uppercase tracking-[0.24em] text-white/45">{group.label}</h3>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {group.skills.map((skill) => (
+                                <span key={skill.key || skill.name} className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1.5 text-[10px] text-white/75">
+                                    {skill.icon && <span aria-hidden="true" className="text-sm">{skill.icon}</span>}{skill.name}
+                                </span>
+                            ))}
+                        </div>
+                    </article>
+                ))}
+            </div>
+        </section>
 
       </header>
 
@@ -505,14 +544,14 @@ export default function PortfolioHome() {
                     <div className="space-y-12 font-sans text-brand-bg/70 leading-relaxed max-w-3xl">
                         <div>
                             <h4 className="text-brand-bg/60 text-xs uppercase tracking-widest mb-4">01. {t.nav.about}</h4>
-                            <motion.p
+                            <Motion.p
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, delay: 0.2 }}
                                 className="text-lg md:text-xl text-brand-bg/85"
                             >
                                 {t.about.bio_intro}
-                            </motion.p>
+                            </Motion.p>
                         </div>
 
                         <div className="md:hidden mt-6">
@@ -530,7 +569,7 @@ export default function PortfolioHome() {
                                 <h4 className="text-brand-bg/60 text-xs uppercase tracking-widest mb-4">{t.about.exp_title}</h4>
                                 <div className="border-l border-brand-bg/20 pl-6 space-y-6">
                                     {t.about.jobs.map((job, i) => (
-                                        <motion.div
+                                        <Motion.div
                                             key={i}
                                             initial={{ opacity: 0, y: 10 }}
                                             whileInView={{ opacity: 1, y: 0 }}
@@ -538,21 +577,21 @@ export default function PortfolioHome() {
                                         >
                                             <h5 className="text-brand-bg text-sm mb-1 font-bold">{job.company}</h5>
                                             <p className="text-sm md:text-base opacity-80">{job.description}</p>
-                                        </motion.div>
+                                        </Motion.div>
                                     ))}
                                 </div>
                             </div>
 
                             <div>
                                 <h4 className="text-brand-bg/60 text-xs uppercase tracking-widest mb-4">{t.about.current_title}</h4>
-                                <motion.p
+                                <Motion.p
                                     initial={{ opacity: 0 }}
                                     whileInView={{ opacity: 1 }}
                                     transition={{ duration: 0.8, delay: 0.8 }}
                                     className="text-brand-bg font-serif text-lg italic leading-relaxed"
                                 >
                                     {t.about.current}
-                                </motion.p>
+                                </Motion.p>
                             </div>
                         </div>
                     </div>
@@ -628,7 +667,7 @@ export default function PortfolioHome() {
                     const imageRight = idx % 2 === 0;
 
                     return (
-                        <motion.div
+                        <Motion.div
                             key={project.id || project.slug || idx}
                             initial={{ opacity: 0, y: 28 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -711,7 +750,7 @@ export default function PortfolioHome() {
                                     )}
                                 </div>
                             </div>
-                        </motion.div>
+                        </Motion.div>
                     );
                 })}
             </div>
@@ -738,7 +777,7 @@ export default function PortfolioHome() {
 
         <div className="max-w-2xl mx-auto text-center">
             <p className="text-brand-bg/60 text-sm md:text-base font-sans mb-8 mt-8 max-w-lg mx-auto">
-                {lang === 'es' ? 'Construyamos algo excepcional.' : 'Let\'s build something exceptional.'}
+                {lang === 'es' ? 'Contame qué necesitás construir o automatizar.' : 'Tell me what you need to build or automate.'}
             </p>
 
             <form className="w-full space-y-8 mt-6" onSubmit={handleContactSubmit}>
@@ -793,9 +832,9 @@ export default function PortfolioHome() {
                 ></textarea>
 
                 <div className="flex justify-end pt-4 items-center gap-4">
-                    {formStatus === 'success' && <span className="text-emerald-700 text-xs uppercase tracking-widest">Message Sent</span>}
+                    {formStatus === 'success' && <span role="status" className="text-emerald-700 text-xs uppercase tracking-widest">{lang === 'es' ? 'Mensaje enviado' : 'Message sent'}</span>}
                     {formStatus === 'error' && <span className="text-red-600 text-xs tracking-wide">{errorMessage}</span>}
-                    {formStatus === 'sending' && <span className="text-brand-bg/50 text-xs uppercase tracking-widest">Sending...</span>}
+                    {formStatus === 'sending' && <span role="status" className="text-brand-bg/50 text-xs uppercase tracking-widest">{lang === 'es' ? 'Enviando…' : 'Sending…'}</span>}
 
                     <button
                         type="submit"
@@ -836,5 +875,6 @@ function FooterEmail() {
         </a>
     );
 }
+
 
 

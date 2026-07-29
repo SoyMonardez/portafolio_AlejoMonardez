@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import ProjectImageGallery from './ProjectImageGallery';
 import { resolveSkill } from '../data/skills';
 import { localizeProject } from '../data/useProjects';
@@ -47,7 +47,7 @@ export default function ProjectShowcase({ project: rawProject, index, lang = 'es
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center px-6 sm:px-12">
 
                 {/* Galería de imágenes (lado alternado) */}
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0, x: isOdd ? 60 : -60 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true, margin: '-80px' }}
@@ -60,10 +60,10 @@ export default function ProjectShowcase({ project: rawProject, index, lang = 'es
                         cursorText={lang === 'es' ? 'AMPLIAR' : 'ZOOM'}
                         interval={4500}
                     />
-                </motion.div>
+                </Motion.div>
 
                 {/* Info */}
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-80px' }}
@@ -143,14 +143,14 @@ export default function ProjectShowcase({ project: rawProject, index, lang = 'es
                             {(project.description_short && project.description && project.description !== project.description_short) && (
                                 <div className="space-y-3 pt-2">
                                     {expanded && (
-                                        <motion.p 
+                                        <Motion.p 
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             transition={{ duration: 0.3 }}
                                             className="text-xs md:text-sm text-white/60 leading-relaxed border-t border-white/10 pt-2"
                                         >
                                             {project.description}
-                                        </motion.p>
+                                        </Motion.p>
                                     )}
                                     <button
                                         onClick={() => setExpanded(!expanded)}
@@ -278,7 +278,7 @@ export default function ProjectShowcase({ project: rawProject, index, lang = 'es
                             </a>
                         )}
                     </div>
-                </motion.div>
+                </Motion.div>
             </div>
         </section>
     );

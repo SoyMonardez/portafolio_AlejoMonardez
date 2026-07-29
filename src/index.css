@@ -5,11 +5,14 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    @apply bg-brand-bg text-brand-text cursor-none;
+    /* overflow-x-clip (y no hidden): corta cualquier elemento decorativo que
+       sobresalga sin crear un contexto de scroll horizontal — el bug de
+       "la página se corre para el costado" en mobile venía de acá. */
+    @apply bg-brand-bg text-brand-text cursor-none overflow-x-clip;
   }
 
   body {
-    @apply antialiased overflow-x-hidden;
+    @apply antialiased overflow-x-clip;
   }
 
   h1,
@@ -41,6 +44,60 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* ===== Skeleton de carga =====
+     "Papel revelándose": placeholder en tono tinta muy suave sobre la lámina
+     de papel, con un barrido de luz que atraviesa el bloque. Se usa mientras
+     llegan datos/imágenes para que el contenido entre revelándose y no de
+     golpe. El color base hereda la tinta a baja opacidad para calzar en
+     cualquier lámina clara del sitio. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: rgba(10, 10, 10, 0.06);
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 100%
+    );
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Entrada ascendente reutilizable — se re-dispara al remontar (cambiar `key`).
+   Anima SOLO el desplazamiento (no la opacidad): si una animación de opacidad
+   quedara congelada al montar (pestaña en segundo plano, timeline pausada), el
+   contenido crítico quedaría invisible. Con transform el peor caso es 12px de
+   offset, siempre legible. */
+@keyframes fade-in-up {
+  from { transform: translateY(14px); }
+  to   { transform: none; }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s cubic-bezier(0.2, 0.65, 0.3, 0.9) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up { animation: none; }
+}
+
+/* Respeta a quien pide menos movimiento: sin barrido, solo el bloque estático */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
 }
 
 /* Cursor en mobile/touch — el custom cursor sólo en pointer:fine (mouse) */
@@ -49,3 +106,146 @@
     cursor: auto !important;
   }
 }
+
+/* ===== Blur del nav al scrollear =====
+   La clase .is-scrolled la togglea SmoothScroll (Lenis) sobre <html> cuando el
+   scroll supera ~40px. La barra .nav-scrim vive detrás del nav (z-30). */
+.nav-scrim {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background 0.5s ease, backdrop-filter 0.5s ease, border-color 0.5s ease;
+}
+.is-scrolled .nav-scrim {
+  background: rgba(10, 10, 10, 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Nav adaptativo (color plano, sin mix-blend-difference) =====
+   Por defecto (arriba de la página) el nav se apoya sobre la tarjeta clara
+   del hero -> tinta oscura. Al scrollear (.is-scrolled) el fondo pasa a ser
+   el scrim oscuro con blur -> texto/logo claros. Evita el problema de
+   mix-blend-difference con múltiples fondos detrás (tarjeta clara + wordmark
+   negro), que daba contraste inconsistente letra a letra. */
+/* El nav flota siempre sobre tinta: arriba de la página el fondo es oscuro
+   (la tarjeta de papel arranca más abajo) y al scrollear aparece el scrim
+   oscuro con blur. Texto/CTA claros en ambos estados. */
+.nav-adaptive-text {
+  color: #EDE9E3;
+}
+
+.nav-adaptive-logo {
+  filter: invert(1); /* el logo es tinta -> papel */
+}
+
+.nav-adaptive-cta {
+  background: #EDE9E3;
+  color: #0a0a0a;
+  border: 1px solid #EDE9E3;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.nav-adaptive-cta:hover {
+  background: transparent;
+  color: #EDE9E3;
+}
+
+.nav-adaptive-icon-btn {
+  border: 1px solid rgba(237, 233, 227, 0.3);
+  background: rgba(237, 233, 227, 0.05);
+  color: #EDE9E3;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.nav-adaptive-icon-btn:hover {
+  background: #EDE9E3;
+  color: #0a0a0a;
+}
+/* Integra la ropa del retrato de escritorio con la banda de tinta. */
+@media (min-width: 768px) {
+  .desktop-hero-portrait::after {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    top: 57%;
+    right: -2px;
+    bottom: 0;
+    left: -2px;
+    background:
+      linear-gradient(
+        90deg,
+        #0a0a0a 0%,
+        rgba(10, 10, 10, 0.82) 10%,
+        transparent 30%,
+        transparent 70%,
+        rgba(10, 10, 10, 0.82) 90%,
+        #0a0a0a 100%
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(10, 10, 10, 0.16) 42%,
+        rgba(10, 10, 10, 0.72) 78%,
+        #0a0a0a 100%
+      );
+    pointer-events: none;
+  }
+}
+/* Señal de scroll: pulso corto y continuo, sin animar la entrada del hero. */
+.hero-scroll-cue > span {
+  animation: hero-scroll-nudge 1.6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.hero-scroll-cue > span:first-child {
+  display: block;
+}
+
+.hero-scroll-cue > span:last-child {
+  animation-delay: 80ms;
+}
+
+@keyframes hero-scroll-nudge {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(7px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-cue > span {
+    animation: none;
+  }
+}
+/* En la portada movil el nav arranca sobre el papel claro del hero. */
+@media (max-width: 767px) {
+  .hero-masthead {
+    top: 20%;
+  }
+
+  .hero-nav-shell {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  html:not(.is-scrolled) .nav-adaptive-text,
+  html:not(.is-scrolled) .nav-adaptive-icon-btn {
+    color: #0a0a0a;
+  }
+
+  html:not(.is-scrolled) .nav-adaptive-logo {
+    filter: none;
+  }
+
+  html:not(.is-scrolled) .nav-adaptive-icon-btn {
+    border-color: rgba(10, 10, 10, 0.25);
+    background: rgba(237, 233, 227, 0.72);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+

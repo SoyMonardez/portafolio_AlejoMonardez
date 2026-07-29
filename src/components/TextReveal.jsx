@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion as Motion, useInView } from 'framer-motion';
 
 export default function TextReveal({ children, className }) {
   const ref = useRef(null);
@@ -39,7 +39,7 @@ export default function TextReveal({ children, className }) {
   }
 
   return (
-    <motion.div
+    <Motion.div
       ref={ref}
       style={{ overflow: "hidden", display: "flex", flexWrap: "wrap" }}
       variants={container}
@@ -48,10 +48,10 @@ export default function TextReveal({ children, className }) {
       className={className}
     >
       {words.map((word, index) => (
-        <motion.span variants={child} style={{ marginRight: "0.25em" }} key={index}>
+        <Motion.span variants={child} style={{ marginRight: "0.25em" }} key={index}>
           {word}
-        </motion.span>
+        </Motion.span>
       ))}
-    </motion.div>
+    </Motion.div>
   );
 }

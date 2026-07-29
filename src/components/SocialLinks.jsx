@@ -15,9 +15,14 @@ import { useLang } from '../data/useLang';
  *   - extra: nodos JSX extra al final (ej. "Descargar CV")
  *   - className: clases para el contenedor
  */
-export default function SocialLinks({ variant = 'pill', extra = null, className = '' }) {
+export default function SocialLinks({ variant = 'pill', extra = null, className = '', tone = 'light' }) {
     const { settings } = useSettings();
     const [lang] = useLang();
+
+    // Estilos según el fondo: 'light' (texto claro sobre tinta) | 'ink' (texto tinta sobre papel)
+    const pillCls = tone === 'ink'
+        ? 'border-brand-bg/25 hover:bg-brand-bg hover:text-white'
+        : 'border-white/20 hover:bg-white hover:text-black';
 
     // Construye la lista de links visibles. El email tiene tratamiento especial:
     // si solo viene la versión b64, lo marcamos como "lazy" para decodificar al click.
@@ -64,7 +69,7 @@ export default function SocialLinks({ variant = 'pill', extra = null, className 
                         rel="noopener noreferrer"
                         title={s.label}
                         aria-label={s.label}
-                        className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-lg hover:bg-white hover:text-black transition-all"
+                        className={`w-10 h-10 rounded-full border flex items-center justify-center text-lg transition-all ${pillCls}`}
                     >
                         {s.icon}
                     </a>
@@ -83,7 +88,7 @@ export default function SocialLinks({ variant = 'pill', extra = null, className 
                     onClick={isEmail(s) ? (e) => handleEmailClick(e, s) : undefined}
                     target={isEmail(s) ? undefined : '_blank'}
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 px-6 py-3 border border-white/20 rounded-full hover:bg-white hover:text-black transition-all duration-300"
+                    className={`group flex items-center gap-3 px-6 py-3 border rounded-full transition-all duration-300 ${pillCls}`}
                 >
                     <span className="text-xl">{s.icon}</span>
                     <span className="uppercase tracking-widest text-xs">{s.label}</span>

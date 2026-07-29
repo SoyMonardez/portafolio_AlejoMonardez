@@ -5,7 +5,7 @@
  * No cachea nada — el portfolio se sirve normal.
  */
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', (_event) => {
     self.skipWaiting();
 });
 

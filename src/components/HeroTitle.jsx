@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 
 export default function HeroTitle() {
   const text = "ALEJO MONARDEZ";
@@ -27,7 +27,7 @@ export default function HeroTitle() {
 
   return (
     <h1 className="text-[14vw] sm:text-[12vw] md:text-[8.5vw] lg:text-[8vw] xl:text-[7.5vw] font-serif leading-[0.85] uppercase tracking-tighter text-white mix-blend-difference relative z-20">
-      <motion.span
+      <Motion.span
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -36,20 +36,20 @@ export default function HeroTitle() {
         {words.map((word, wordIndex) => (
           <span key={wordIndex} className="inline-block whitespace-nowrap">
             {Array.from(word).map((char, charIndex) => (
-              <motion.span
+              <Motion.span
                 key={charIndex}
                 variants={charVariants}
                 className="inline-block"
               >
                 {char}
-              </motion.span>
+              </Motion.span>
             ))}
             {wordIndex < words.length - 1 && (
               <span className="inline-block w-[0.2em]">&nbsp;</span>
             )}
           </span>
         ))}
-      </motion.span>
+      </Motion.span>
     </h1>
   );
 }

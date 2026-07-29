@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 /**
@@ -18,7 +18,7 @@ export default function ProjectImageGallery({
     images = [],
     alt = '',
     interval = 4000,
-    href,
+    href: _href,
     cursorText = 'DEMO'
 }) {
     const [index, setIndex] = useState(0);
@@ -61,6 +61,17 @@ export default function ProjectImageGallery({
             document.body.style.overflow = '';
         };
     }, [isLightboxOpen, len]);
+
+    useEffect(() => {
+        if (transformRef.current) transformRef.current.resetTransform(0);
+        setIsZoomed(false);
+    }, [index]);
+    useEffect(() => {
+        if (!isLightboxOpen) {
+            if (transformRef.current) transformRef.current.resetTransform(0);
+            setIsZoomed(false);
+        }
+    }, [isLightboxOpen]);
 
     // Si no hay imágenes — placeholder editorial
     if (len === 0) {
@@ -109,15 +120,6 @@ export default function ProjectImageGallery({
         }
     };
 
-    // Reset del zoom al cambiar de slide o al cerrar
-    const resetZoom = () => {
-        if (transformRef.current) {
-            transformRef.current.resetTransform(0);
-        }
-        setIsZoomed(false);
-    };
-    useEffect(() => { resetZoom(); }, [index]);
-    useEffect(() => { if (!isLightboxOpen) resetZoom(); }, [isLightboxOpen]);
 
     return (
         <>
@@ -128,7 +130,7 @@ export default function ProjectImageGallery({
                 onTouchStart={() => setPaused(true)}
             >
                 {/* Layer interactiva: drag horizontal en mobile / click en desktop para abrir lightbox */}
-                <motion.div
+                <Motion.div
                     drag={len > 1 ? 'x' : false}
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.25}
@@ -138,7 +140,7 @@ export default function ProjectImageGallery({
                     aria-label={cursorText}
                 >
                     <AnimatePresence mode="wait">
-                        <motion.img
+                        <Motion.img
                             key={index}
                             src={valid[index]}
                             alt={`${alt} ${index + 1}`}
@@ -159,7 +161,7 @@ export default function ProjectImageGallery({
                         aria-label={cursorText}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-                </motion.div>
+                </Motion.div>
 
                 {/* Controles (sólo si hay 2+ imágenes) */}
                 {len > 1 && (
@@ -213,7 +215,7 @@ export default function ProjectImageGallery({
             {/* Lightbox Modal */}
             <AnimatePresence>
                 {isLightboxOpen && (
-                    <motion.div
+                    <Motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -252,7 +254,7 @@ export default function ProjectImageGallery({
                             )}
 
                             {/* Capa OUTER: framer-motion drag para dismiss/cambiar-slide (solo cuando scale=1) */}
-                            <motion.div
+                            <Motion.div
                                 key={index}
                                 drag={!isZoomed}
                                 dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -292,13 +294,13 @@ export default function ProjectImageGallery({
                                         />
                                     </TransformComponent>
                                 </TransformWrapper>
-                            </motion.div>
+                            </Motion.div>
 
                             {/* Botón reset zoom — solo aparece cuando hay zoom activo */}
                             {isZoomed && (
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); resetZoom(); }}
+                                    onClick={(e) => { e.stopPropagation(); if (transformRef.current) transformRef.current.resetTransform(0); setIsZoomed(false); }}
                                     className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.25em] bg-white text-black px-4 py-2 rounded-full font-bold hover:bg-gray-200 transition-all z-[9930] shadow-lg"
                                     aria-label="Reset zoom"
                                 >
@@ -328,7 +330,7 @@ export default function ProjectImageGallery({
                                 </>
                             )}
                         </div>
-                    </motion.div>
+                    </Motion.div>
                 )}
             </AnimatePresence>
         </>

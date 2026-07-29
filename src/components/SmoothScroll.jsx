@@ -21,8 +21,19 @@ export default function SmoothScroll({ children }) {
 
     requestAnimationFrame(raf);
 
+    // Expone la instancia (útil para debug / anchors programáticos).
+    window.__lenis = lenis;
+
+    // Expone la posición de scroll como clase en <html> para efectos dependientes
+    // del scroll (ej. blur del nav), de forma confiable con el smooth-scroll.
+    lenis.on('scroll', ({ scroll }) => {
+      document.documentElement.classList.toggle('is-scrolled', scroll > 40);
+    });
+
     return () => {
       lenis.destroy();
+      document.documentElement.classList.remove('is-scrolled');
+      if (window.__lenis === lenis) delete window.__lenis;
     };
   }, []);
 
