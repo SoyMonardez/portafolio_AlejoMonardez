@@ -24,6 +24,7 @@ router.post(
     uploader.single('file'),
     asyncHandler(async (req, res) => {
         if (!req.file) throw badRequest('No se recibió archivo');
+        await uploadService.optimizeImage(req.file);
         const url = uploadService.buildPublicUrl(req.file);
         res.json({ success: true, url });
     })

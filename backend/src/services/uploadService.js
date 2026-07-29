@@ -2,6 +2,7 @@ import multer from 'multer';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+import sharp from 'sharp';
 import { PDFDocument } from 'pdf-lib';
 import { env } from '../config/env.js';
 import { badRequest } from '../utils/httpError.js';
@@ -95,8 +96,51 @@ export const cvUploader = multer({
     },
 });
 
+// ─────────────────── Optimización de imágenes (nuevo) ───────────────────
+const IMAGE_MAX_WIDTH   = 1920;  // suficiente para cualquier pantalla, evita subidas de 4K+ sin necesidad
+const IMAGE_WEBP_QUALITY = 82;   // buen balance calidad/peso para capturas de proyectos
+
+/**
+ * Convierte la imagen recién subida a WebP y la redimensiona si excede el
+ * ancho máximo. Reduce el peso ~70-90% sin pérdida visible.
+ * Los GIF quedan intactos: convertirlos con esta config perdería la animación.
+ * Muta `file.filename` para que el resto del flujo (URL pública, DB) use el
+ * nombre final.
+ */
+async function optimizeProjectImage(file) {
+    if (file.mimetype === 'image/gif') return file.filename;
+
+    const srcPath   = path.join(uploadDirAbs, file.filename);
+    const finalName = file.filename.replace(/\.\w+$/, '.webp');
+    const finalPath = path.join(uploadDirAbs, finalName);
+    const tmpPath   = `${finalPath}.tmp`;
+
+    try {
+        await sharp(srcPath)
+            .resize({ width: IMAGE_MAX_WIDTH, withoutEnlargement: true })
+            .webp({ quality: IMAGE_WEBP_QUALITY })
+            .toFile(tmpPath);
+
+        await fs.rename(tmpPath, finalPath);
+        if (srcPath !== finalPath) {
+            await fs.unlink(srcPath).catch(() => {});
+        }
+
+        file.filename = finalName;
+    } catch (err) {
+        // No bloqueante: si sharp falla (archivo raro/corrupto) se sirve el original.
+        await fs.unlink(tmpPath).catch(() => {});
+        console.warn('[uploadService] optimizeProjectImage falló, se sirve el original:', err.message);
+    }
+
+    return file.filename;
+}
+
 // ─────────────────── Servicio ───────────────────
 export const uploadService = {
+    /** Optimiza (WebP + resize) la imagen de proyecto recién subida. */
+    optimizeImage: optimizeProjectImage,
+
     /** URL pública para imágenes de proyectos. */
     buildPublicUrl(file) {
         if (!file) throw badRequest('No se recibió archivo');

@@ -126,9 +126,9 @@ services:
     depends_on:
       - backend
       - ai-service
-    ports:
-      # Único puerto expuesto al host. El nginx del VPS hace TLS y proxea acá.
-      - "${HOST_PORT:-8080}:80"
+    # Sin "ports": el NPM llega por la red `npm` (nginx_network) usando el
+    # nombre del contenedor, no hace falta publicar el puerto al host.
+    # Así se evita el acceso directo por http://IP:8080 sin pasar por el dominio.
     volumes:
       # Solo lectura — el backend escribe, el frontend solo sirve
       - uploads_data:/var/www/uploads:ro

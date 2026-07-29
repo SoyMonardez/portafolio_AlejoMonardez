@@ -202,7 +202,7 @@ function renderHtml({ name, email, phone, message }) {
 
         <!-- Mini-firma fuera del card -->
         <p style="margin:24px 0 0 0;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#444;text-align:center;">
-          ALEJO · MONÁRDEZ · SOFTWARE · ENGINEER
+          ALEJO · MONÁRDEZ · DESARROLLO · SOFTWARE
         </p>
       </td>
     </tr>
@@ -210,3 +210,4 @@ function renderHtml({ name, email, phone, message }) {
 </body>
 </html>`;
 }
+

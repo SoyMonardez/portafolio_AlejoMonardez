@@ -24,13 +24,15 @@ COPY public ./public
 RUN npm run build
 
 # ---- Stage 2: imagen final con Nginx ----
-FROM nginx:alpine AS runtime
+# Usamos el paquete nginx de Alpine (no la imagen oficial nginx:alpine) porque
+# trae nginx-mod-http-brotli como módulo dinámico ya compilado y compatible.
+FROM alpine:3.20 AS runtime
 
-# curl para el healthcheck (~2 MB; nginx:alpine no trae nada de eso por defecto)
-RUN apk add --no-cache curl
+RUN apk add --no-cache nginx nginx-mod-http-brotli curl
 
-# Reemplazamos la config default
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+# Config principal (carga los módulos de brotli) + server block real
+COPY nginx/nginx-main.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf      /etc/nginx/http.d/default.conf
 
 # Copiamos el bundle compilado
 COPY --from=builder /app/dist /usr/share/nginx/html
@@ -39,3 +41,5 @@ EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD curl -fsS http://localhost/health || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]
