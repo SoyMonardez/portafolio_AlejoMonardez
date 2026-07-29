@@ -2,6 +2,7 @@ import { env } from './config/env.js';
 import { buildApp } from './app.js';
 import { pingDb } from './config/db.js';
 import { isMailerEnabled } from './config/mailer.js';
+import { analyticsService } from './services/analyticsService.js';
 
 const app = buildApp();
 
@@ -11,6 +12,14 @@ try {
 } catch (err) {
     console.error('[backend] No se pudo conectar a MySQL:', err.message);
     process.exit(1);
+}
+
+// Crea la tabla de analytics si falta (idempotente). No bloquea el arranque si falla.
+try {
+    await analyticsService.ensureSchema();
+    console.log('[backend] Analytics schema OK');
+} catch (err) {
+    console.error('[backend] No se pudo asegurar el schema de analytics:', err.message);
 }
 
 app.listen(env.port, () => {
